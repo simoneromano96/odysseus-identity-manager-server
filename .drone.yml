@@ -1,0 +1,19 @@
+---
+kind: pipeline
+name: odysseus-identity-manager-server
+
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      registry: ghcr.io
+      username: simoneromano96
+      password: 
+        from_secret: token
+      repo: ghcr.io/simoneromano96/odysseus-identity-manager/server
+      context: .
+      dockerfile: ./.docker/odysseus-identity-manager-server.dockerfile
+      auto_tag: true
+      target: production
+      config:
+        from_secret: docker_auth_config
