@@ -1,14 +1,23 @@
-# Enable additional debugging logging
-debug: true
-# Redis
-redis:
-  url: redis://127.0.0.1:6379
+# Server and App configurations
+app:
+  # The port exposed by the app
+  port: 8000
+# Logger configurations
+logger:
+  # Logging level
+  level: debug
+  # File logger path
+  path: ./logs/app.log
+# Mongo configuration
+mongo:
+  # Connection URI
+  uri: mongodb://root:example@localhost:27017/
+  # Database name
+  database: odysseus
 # Session
 session:
   secret: N7WoK3mG7lSb0CpK8UhAabUZNi27n5ub
-# Mongo Database
-database:
-  url: mongodb://root:example@127.0.0.1:27017/admin
-# HTTP Server
-server:
-  port: 4001
+# Redis configuration
+redis:
+  # Redis connection URI
+  uri: redis://localhost:6379

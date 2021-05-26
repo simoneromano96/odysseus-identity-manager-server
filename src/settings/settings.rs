@@ -47,12 +47,12 @@ pub struct SessionConfig {
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Settings {
+  /// App and server configuration
+  pub app: AppConfig,
   /// Logger configuration
   pub logger: LoggerConfig,
   /// Mongo database configuration
   pub mongo: MongoConfig,
-  /// App and server configuration
-  pub app: AppConfig,
   /// Redis configuration
   pub redis: RedisConfig,
   /// Session configuration
@@ -86,7 +86,7 @@ impl Settings {
       .expect("Cannot get env");
 
     // Deserialize configuration
-    let mut r: Settings = s.try_into().expect("Configuration error");
+    let r: Settings = s.try_into().expect("Configuration error");
 
     r
   }
