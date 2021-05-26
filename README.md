@@ -2,7 +2,7 @@
 
 ## Environment variables
 
-* APP_APP_PORT
+* APP_SERVER_PORT
 
 * APP_LOGGER_LEVEL
 
@@ -15,3 +15,5 @@
 * APP_REDIS_URI
 
 * APP_SESSION_SECRET
+
+* APP_HYDRA_URL

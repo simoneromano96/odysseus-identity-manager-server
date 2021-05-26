@@ -25,7 +25,9 @@ pub fn init_logger() {
 
 	let pattern = format!("{}.{{}}.gz", &APP_SETTINGS.logger.path);
 
-	let fixed_roller = FixedWindowRoller::builder().build(&pattern, 2).expect("Could not create fixed_roller");
+	let fixed_roller = FixedWindowRoller::builder()
+		.build(&pattern, 2)
+		.expect("Could not create fixed_roller");
 
 	let rolling_policy = CompoundPolicy::new(Box::new(size_trigger), Box::new(fixed_roller));
 

@@ -30,5 +30,7 @@ pub fn verify_password(password_hash: &str, password: &str) -> Result<(), Passwo
 	// Create Hash from PHC string
 	let hash = PasswordHash::new(password_hash).map_err(|_| PasswordErrors::HashError)?;
 
-	ARGON_2.verify_password(password.as_bytes(), &hash).map_err(|_| PasswordErrors::InvalidPassword)
+	ARGON_2
+		.verify_password(password.as_bytes(), &hash)
+		.map_err(|_| PasswordErrors::InvalidPassword)
 }

@@ -1,7 +1,6 @@
 use actix_redis::RedisSession;
 use actix_web::{self, cookie, middleware, App, HttpServer};
 use paperclip::actix::{web::scope, OpenApiExt};
-use ory_hydra_client;
 
 use crate::{
 	routes::auth::{login, logout, signup, user_info},
@@ -50,7 +49,7 @@ async fn main() -> std::io::Result<()> {
 			// Build the app
 			.build()
 	})
-	.bind(format!("0.0.0.0:{:?}", APP_SETTINGS.app.port))?
+	.bind(format!("0.0.0.0:{:?}", APP_SETTINGS.server.port))?
 	.run()
 	.await
 }

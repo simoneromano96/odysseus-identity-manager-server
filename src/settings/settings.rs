@@ -5,7 +5,7 @@ use once_cell::sync::Lazy;
 use ory_hydra_client::apis::configuration::Configuration as OryConfiguration;
 use serde::{Deserialize, Serialize};
 
-use super::{HydraSettings, LoggerSettings, MongoSettings};
+use super::{HydraSettings, LoggerSettings, MongoSettings, ServerSettings};
 
 pub static APP_SETTINGS: Lazy<Settings> = Lazy::new(Settings::init_config);
 
@@ -13,31 +13,21 @@ pub static ORY_HYDRA_CONFIGURATION: Lazy<OryConfiguration> = Lazy::new(init_ory_
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-/// App and server configuration
-pub struct AppSettings {
-	/// Server's port
-	pub port: u16,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct RedisSettings {
-  /// Redis client connection uri
+	/// Redis client connection uri
 	pub uri: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionSettings {
-  /// Encryption secret
+	/// Encryption secret
 	pub secret: String,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Settings {
-	/// App and server configuration
-	pub app: AppSettings,
 	/// Logger configuration
 	pub logger: LoggerSettings,
 	/// ORY Hydra client configuration
@@ -46,6 +36,8 @@ pub struct Settings {
 	pub mongo: MongoSettings,
 	/// Redis configuration
 	pub redis: RedisSettings,
+	/// HTTP server configuration
+	pub server: ServerSettings,
 	/// Session configuration
 	pub session: SessionSettings,
 }
@@ -68,11 +60,13 @@ impl Settings {
 
 		// Add in the current environment file
 		// Default to 'development' env
-		s.merge(File::from(config_file_path).required(false)).expect("Could not read file");
+		s.merge(File::from(config_file_path).required(false))
+			.expect("Could not read file");
 
 		// Add in settings from the environment
 		// ex. APP_DEBUG=1 sets debug key, APP_DATABASE_URL sets database.url key
-		s.merge(Environment::new().prefix("APP").separator("_")).expect("Cannot get env");
+		s.merge(Environment::new().prefix("APP").separator("_"))
+			.expect("Cannot get env");
 
 		// Deserialize configuration
 		let r: Settings = s.try_into().expect("Configuration error");
