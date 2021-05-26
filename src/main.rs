@@ -26,7 +26,7 @@ async fn main() -> std::io::Result<()> {
 			.wrap(middleware::Logger::default())
 			// cookie session middleware
 			.wrap(
-				RedisSession::new(&APP_SETTINGS.redis.url, APP_SETTINGS.session.secret.as_bytes())
+				RedisSession::new(&APP_SETTINGS.redis.uri, APP_SETTINGS.session.secret.as_bytes())
 					// Don't allow the cookie to be accessed from javascript
 					.cookie_http_only(true)
 					// allow the cookie only from the current domain
@@ -35,7 +35,15 @@ async fn main() -> std::io::Result<()> {
 			.data(identity_database.clone())
 			// Record services and routes from this line.
 			.wrap_api()
-			.service(scope("/api").service(scope("/v1").service(signup).service(login).service(user_info).service(logout)))
+			.service(
+				scope("/api").service(
+					scope("/v1")
+						.service(signup)
+						.service(login)
+						.service(user_info)
+						.service(logout),
+				),
+			)
 			// Mount the JSON spec at this path.
 			.with_json_spec_at("/openapi")
 			// Build the app

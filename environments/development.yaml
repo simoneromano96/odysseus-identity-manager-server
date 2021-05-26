@@ -14,10 +14,10 @@ mongo:
   uri: mongodb://root:example@localhost:27017/
   # Database name
   database: odysseus
-# Session
-session:
-  secret: N7WoK3mG7lSb0CpK8UhAabUZNi27n5ub
 # Redis configuration
 redis:
   # Redis connection URI
   uri: redis://localhost:6379
+# Session
+session:
+  secret: N7WoK3mG7lSb0CpK8UhAabUZNi27n5ub
