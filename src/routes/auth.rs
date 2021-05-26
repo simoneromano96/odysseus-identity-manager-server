@@ -1,7 +1,4 @@
-use crate::{
-	models::{User, UserInfo, UserInput},
-	utils::{hash_password, verify_password},
-};
+use crate::{models::{User, UserInfo, UserInput}, settings::{APP_SETTINGS, ORY_HYDRA_CONFIGURATION}, utils::{hash_password, verify_password}};
 use actix_session::Session;
 use paperclip::actix::{
 	api_v2_operation, get, post,
@@ -12,6 +9,7 @@ use wither::{
 	mongodb::Database as MongoDatabase,
 	prelude::*,
 };
+use ory_hydra_client::{apis::admin_api, models::AcceptLoginRequest};
 
 /// User signup
 ///
@@ -41,6 +39,9 @@ pub async fn signup(db: Data<MongoDatabase>, new_user: Json<UserInput>) -> Resul
 #[api_v2_operation]
 #[post("/login")]
 pub async fn login(credentials: Json<UserInput>, session: Session, db: Data<MongoDatabase>) -> Result<Json<UserInfo>, HttpResponse> {
+	// let body = AcceptLoginRequest::new();
+	// let something = admin_api::accept_login_request(&ORY_HYDRA_CONFIGURATION, "123", body);
+	
 	let maybe_user: Option<ObjectId> = session.get("user_id").unwrap();
 	if let Some(user_id) = maybe_user {
 		// We can be sure that the user exists if there is a session

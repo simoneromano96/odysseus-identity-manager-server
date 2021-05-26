@@ -2,46 +2,33 @@ use std::env;
 
 use config::{Config, Environment, File};
 use once_cell::sync::Lazy;
+use ory_hydra_client::apis::configuration::Configuration as OryConfiguration;
 use serde::{Deserialize, Serialize};
+
+use super::{HydraSettings, LoggerSettings, MongoSettings};
 
 pub static APP_SETTINGS: Lazy<Settings> = Lazy::new(Settings::init_config);
 
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-/// Mongo database configuration
-pub struct MongoConfig {
-	/// DB Connection URI
-	pub uri: String,
-	/// DB Name
-	pub database: String,
-}
+pub static ORY_HYDRA_CONFIGURATION: Lazy<OryConfiguration> = Lazy::new(init_ory_config);
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 /// App and server configuration
-pub struct AppConfig {
+pub struct AppSettings {
 	/// Server's port
 	pub port: u16,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct LoggerConfig {
-	/// What should the (terminal) logger print
-	pub level: String,
-	/// File logger path output
-	pub path: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct RedisConfig {
+pub struct RedisSettings {
   /// Redis client connection uri
 	pub uri: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SessionConfig {
+pub struct SessionSettings {
   /// Encryption secret
 	pub secret: String,
 }
@@ -50,15 +37,17 @@ pub struct SessionConfig {
 #[serde(rename_all = "camelCase")]
 pub struct Settings {
 	/// App and server configuration
-	pub app: AppConfig,
+	pub app: AppSettings,
 	/// Logger configuration
-	pub logger: LoggerConfig,
+	pub logger: LoggerSettings,
+	/// ORY Hydra client configuration
+	pub hydra: HydraSettings,
 	/// Mongo database configuration
-	pub mongo: MongoConfig,
+	pub mongo: MongoSettings,
 	/// Redis configuration
-	pub redis: RedisConfig,
+	pub redis: RedisSettings,
 	/// Session configuration
-	pub session: SessionConfig,
+	pub session: SessionSettings,
 }
 
 impl Settings {
@@ -90,4 +79,10 @@ impl Settings {
 
 		r
 	}
+}
+
+fn init_ory_config() -> OryConfiguration {
+	let mut configuration = OryConfiguration::new();
+	configuration.base_path = APP_SETTINGS.hydra.url.clone();
+	configuration
 }

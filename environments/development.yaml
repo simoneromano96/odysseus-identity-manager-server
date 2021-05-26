@@ -2,6 +2,9 @@
 app:
   # The port exposed by the app
   port: 8000
+# Hydra client configuration
+hydra: 
+  url: http://localhost:3000
 # Logger configurations
 logger:
   # Logging level

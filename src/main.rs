@@ -1,6 +1,7 @@
 use actix_redis::RedisSession;
 use actix_web::{self, cookie, middleware, App, HttpServer};
 use paperclip::actix::{web::scope, OpenApiExt};
+use ory_hydra_client;
 
 use crate::{
 	routes::auth::{login, logout, signup, user_info},
