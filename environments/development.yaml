@@ -5,7 +5,7 @@ app:
 # Logger configurations
 logger:
   # Logging level
-  level: debug
+  level: info
   # File logger path
   path: ./logs/app.log
 # Mongo configuration
@@ -17,7 +17,7 @@ mongo:
 # Redis configuration
 redis:
   # Redis connection URI
-  uri: redis://localhost:6379
+  uri: localhost:6379
 # Session
 session:
   secret: N7WoK3mG7lSb0CpK8UhAabUZNi27n5ub
