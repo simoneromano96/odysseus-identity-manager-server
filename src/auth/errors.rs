@@ -26,6 +26,8 @@ pub enum AuthErrors {
 	UserNotFound,
 	#[error("User is not logged in")]
 	UserNotLogged,
+	#[error("Ory hydra error")]
+	HydraError,
 }
 
 impl ResponseError for AuthErrors {

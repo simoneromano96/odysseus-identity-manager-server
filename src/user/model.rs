@@ -8,7 +8,7 @@ use wither::{
 
 use crate::utils::hash_password;
 
-use super::{UserErrors, UserInput};
+use super::{CreateUserInput, UserErrors};
 
 /// User representation
 #[derive(Debug, Model, Serialize, Deserialize)]
@@ -25,8 +25,8 @@ pub struct User {
 
 impl User {
 	/// Create a new user
-	pub async fn create_user(db: &Database, input: UserInput) -> Result<Self, UserErrors> {
-		let UserInput { username, password } = input;
+	pub async fn create_user(db: &Database, input: CreateUserInput) -> Result<Self, UserErrors> {
+		let CreateUserInput { username, password } = input;
 
 		// Hash the password
 		let password = hash_password(&password)?;

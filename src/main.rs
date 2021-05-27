@@ -1,3 +1,4 @@
+use actix_cors::Cors;
 use actix_redis::RedisSession;
 use actix_web::{self, cookie, middleware, App, HttpServer};
 use paperclip::actix::{web::scope, OpenApiExt};
@@ -32,6 +33,7 @@ async fn main() -> std::io::Result<()> {
 					// allow the cookie only from the current domain
 					.cookie_same_site(cookie::SameSite::Lax),
 			)
+			.wrap(Cors::permissive())
 			.data(identity_database.clone())
 			// Record services and routes from this line.
 			.wrap_api()

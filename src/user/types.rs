@@ -6,7 +6,7 @@ use super::User;
 
 /// New user input data
 #[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
-pub struct UserInput {
+pub struct CreateUserInput {
 	/// The new user username, must be unique.
 	pub username: String,
 	/// The new user password.

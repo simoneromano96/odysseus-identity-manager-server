@@ -1,10 +1,12 @@
 use crate::{
 	auth::AuthErrors,
-	user::{User, UserInfo, UserInput},
+	settings::ORY_HYDRA_CONFIGURATION,
+	user::{CreateUserInput, User, UserInfo},
 	utils::verify_password,
 };
 
 use actix_session::Session;
+use actix_web::web::Query;
 use log::info;
 use ory_hydra_client::{apis::admin_api, models::AcceptLoginRequest};
 use paperclip::actix::{
@@ -13,14 +15,19 @@ use paperclip::actix::{
 };
 use wither::{bson::oid::ObjectId, mongodb::Database as MongoDatabase};
 
+use super::{LoginInput, OauthLoginRequest};
+
 /// User signup
 ///
 /// Creates a new user but doesn't log in the user
 #[api_v2_operation]
 #[post("/signup")]
-pub async fn signup(db: Data<MongoDatabase>, new_user: Json<UserInput>) -> Result<Json<UserInfo>, AuthErrors> {
+pub async fn signup(
+	db: Data<MongoDatabase>,
+	create_user_input: Json<CreateUserInput>,
+) -> Result<Json<UserInfo>, AuthErrors> {
 	// Create a user
-	let user = User::create_user(&db, new_user.into_inner()).await?;
+	let user = User::create_user(&db, create_user_input.into_inner()).await?;
 	Ok(Json(user.into()))
 }
 
@@ -30,7 +37,8 @@ pub async fn signup(db: Data<MongoDatabase>, new_user: Json<UserInput>) -> Resul
 #[api_v2_operation]
 #[post("/login")]
 pub async fn login(
-	credentials: Json<UserInput>,
+	login_input: Json<LoginInput>,
+	oauth_request: Query<OauthLoginRequest>,
 	session: Session,
 	db: Data<MongoDatabase>,
 ) -> Result<Json<UserInfo>, AuthErrors> {
@@ -47,12 +55,12 @@ pub async fn login(
 		}
 		None => {
 			// Find the user
-			let user = User::find_by_username(&db, &credentials.username)
+			let user = User::find_by_username(&db, &login_input.username)
 				.await?
 				.ok_or(AuthErrors::UserNotFound)?;
 
 			// Verify the password
-			verify_password(&user.password, &credentials.password)?;
+			verify_password(&user.password, &login_input.password)?;
 
 			info!("User logged in: {:?}", &user);
 
@@ -62,6 +70,16 @@ pub async fn login(
 			user
 		}
 	};
+
+	if let Some(login_challenge) = oauth_request.into_inner().login_challenge {
+		info!("Handling a login challenge");
+		let body: AcceptLoginRequest = AcceptLoginRequest::new(user.id.clone().unwrap().to_string());
+		let login_request = admin_api::accept_login_request(&ORY_HYDRA_CONFIGURATION, &login_challenge, Some(body))
+			.await
+			.map_err(|_e| AuthErrors::HydraError)?;
+		
+		info!("Hydra login response {:?}", login_request);
+	}
 
 	// Give back user info
 	Ok(Json(user.into()))
