@@ -40,6 +40,7 @@ impl ResponseError for AuthErrors {
 		match self {
 			Self::UserCreationError(UserErrors::DatabaseError(_)) => StatusCode::BAD_REQUEST,
 			Self::InvalidCookie => StatusCode::FORBIDDEN,
+			Self::UserNotLogged => StatusCode::FORBIDDEN,
 			Self::UserNotFound => StatusCode::NOT_FOUND,
 			Self::PasswordError(_) => StatusCode::BAD_REQUEST,
 			_ => StatusCode::INTERNAL_SERVER_ERROR,

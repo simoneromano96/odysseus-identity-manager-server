@@ -5,12 +5,13 @@ use crate::{
 };
 
 use actix_session::Session;
+use log::info;
 use ory_hydra_client::{apis::admin_api, models::AcceptLoginRequest};
 use paperclip::actix::{
 	api_v2_operation, get, post,
 	web::{Data, HttpResponse, Json},
 };
-use wither::mongodb::Database as MongoDatabase;
+use wither::{bson::oid::ObjectId, mongodb::Database as MongoDatabase};
 
 /// User signup
 ///
@@ -33,7 +34,7 @@ pub async fn login(
 	session: Session,
 	db: Data<MongoDatabase>,
 ) -> Result<Json<UserInfo>, AuthErrors> {
-	match session.get("user_id")? {
+	let user = match session.get("user_id")? {
 		Some(user_id) => {
 			// We can be sure that the user exists if there is a session, unless the cookie has been revoked
 			let user = User::find_by_id(&db, &user_id)
@@ -41,8 +42,8 @@ pub async fn login(
 				.ok_or(AuthErrors::InvalidCookie)?;
 			// Renew the session
 			session.renew();
-			// Give back user info
-			Ok(Json(user.into()))
+
+			user
 		}
 		None => {
 			// Find the user
@@ -53,13 +54,17 @@ pub async fn login(
 			// Verify the password
 			verify_password(&user.password, &credentials.password)?;
 
+			info!("User logged in: {:?}", &user);
+
 			// Create a session for the user
 			session.set("user_id", user.id.clone().unwrap())?;
 
-			// Give back user info
-			Ok(Json(user.into()))
+			user
 		}
-	}
+	};
+
+	// Give back user info
+	Ok(Json(user.into()))
 }
 
 /// User info
@@ -90,7 +95,10 @@ pub async fn user_info(session: Session, db: Data<MongoDatabase>) -> Result<Json
 #[api_v2_operation]
 #[get("/logout")]
 pub async fn logout(session: Session) -> Result<HttpResponse, AuthErrors> {
-	session.get("user_id")?.ok_or(AuthErrors::UserNotLogged)?;
+	info!("Logout request");
+	let _: ObjectId = session.get("user_id")?.ok_or(AuthErrors::UserNotLogged)?;
+	info!("Got a logged user");
 	session.clear();
+	info!("Cleaned session");
 	Ok(HttpResponse::Ok().body("Logged out"))
 }

@@ -1,5 +1,5 @@
-# Server and App configurations
-app:
+# Server configurations
+server:
   # The port exposed by the app
   port: 8000
 # Hydra client configuration
