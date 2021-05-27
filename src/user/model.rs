@@ -1,6 +1,4 @@
-use paperclip::actix::Apiv2Schema;
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
 use wither::{
 	bson::{doc, oid::ObjectId},
 	mongodb::Database,
@@ -8,7 +6,9 @@ use wither::{
 	WitherError,
 };
 
-use crate::utils::{hash_password, PasswordErrors};
+use crate::utils::hash_password;
+
+use super::{UserErrors, UserInput};
 
 /// User representation
 #[derive(Debug, Model, Serialize, Deserialize)]
@@ -21,14 +21,6 @@ pub struct User {
 	pub username: String,
 	/// The hashed password.
 	pub password: String,
-}
-
-#[derive(Error, Debug)]
-pub enum UserErrors {
-	#[error("{0}")]
-	DatabaseError(#[from] WitherError),
-	#[error("{0}")]
-	HashError(#[from] PasswordErrors),
 }
 
 impl User {
@@ -57,35 +49,4 @@ impl User {
 	pub async fn find_by_username(db: &Database, username: &str) -> Result<Option<Self>, WitherError> {
 		User::find_one(&db, doc! { "username": username }, None).await
 	}
-}
-
-/// Available User info
-#[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
-pub struct UserInfo {
-	/// The ID of the user.
-	#[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-	pub id: Option<ObjectId>,
-	/// The username.
-	pub username: String,
-}
-
-impl From<User> for UserInfo {
-	fn from(user: User) -> Self {
-		let User { id, username, .. } = user;
-		UserInfo {
-			id,
-			username,
-		}
-	}
-}
-
-/// New user input data
-#[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
-pub struct UserInput {
-	/// The new user username, must be unique.
-	pub username: String,
-	/// The new user password.
-	pub password: String,
-	// User email
-	// email: String,
 }

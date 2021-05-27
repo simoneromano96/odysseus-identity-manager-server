@@ -3,16 +3,15 @@ use actix_web::{self, cookie, middleware, App, HttpServer};
 use paperclip::actix::{web::scope, OpenApiExt};
 
 use crate::{
-	routes::auth::{login, logout, signup, user_info},
+	auth::{login, logout, signup, user_info},
 	settings::APP_SETTINGS,
 	utils::{init_database, init_logger},
 };
 
-mod models;
-mod routes;
-mod settings;
-mod utils;
 mod auth;
+mod settings;
+mod user;
+mod utils;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

@@ -1,7 +1,7 @@
 pub mod errors;
-pub mod routes;
+pub mod model;
 pub mod types;
 
 pub use errors::*;
-pub use routes::*;
+pub use model::*;
 pub use types::*;

@@ -4,7 +4,7 @@ use wither::{
 	Model,
 };
 
-use crate::{models::User, settings::APP_SETTINGS};
+use crate::{settings::APP_SETTINGS, user::User};
 
 pub async fn init_database() -> Database {
 	let db = Client::with_uri_str(&APP_SETTINGS.mongo.uri)
