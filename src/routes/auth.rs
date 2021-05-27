@@ -1,40 +1,78 @@
 use crate::{
-	models::{User, UserInfo, UserInput},
+	models::{User, UserErrors, UserInfo, UserInput},
 	settings::{APP_SETTINGS, ORY_HYDRA_CONFIGURATION},
-	utils::{hash_password, verify_password},
+	utils::{hash_password, verify_password, PasswordErrors},
 };
+
 use actix_session::Session;
+use actix_web::{http::StatusCode, Error as ActixError, ResponseError};
 use ory_hydra_client::{apis::admin_api, models::AcceptLoginRequest};
 use paperclip::actix::{
 	api_v2_operation, get, post,
 	web::{Data, HttpResponse, Json},
 };
+use serde::{Deserialize, Serialize};
+use thiserror::Error;
 use wither::{
 	bson::{doc, oid::ObjectId},
 	mongodb::Database as MongoDatabase,
 	prelude::*,
+	WitherError,
 };
+
+#[derive(Debug, Deserialize, Serialize)]
+struct ErrorResponse {
+	error: String,
+}
+
+#[derive(Error, Debug)]
+pub enum AuthErrors {
+	#[error("Internal server error")]
+	ActixError(#[from] ActixError),
+	#[error("Internal server error")]
+	DatabaseError(#[from] WitherError),
+	#[error("Could not create user")]
+	UserCreationError(#[from] UserErrors),
+	#[error("{0}")]
+	PasswordError(#[from] PasswordErrors),
+	#[error("Invalid cookie")]
+	InvalidCookie,
+	#[error("User not found")]
+	UserNotFound,
+	#[error("User is not logged in")]
+	UserNotLogged,
+}
+
+impl ResponseError for AuthErrors {
+	fn error_response(&self) -> HttpResponse {
+		let error_response = ErrorResponse {
+			error: self.to_string(),
+		};
+		HttpResponse::build(self.status_code()).json(error_response)
+	}
+
+	fn status_code(&self) -> StatusCode {
+		match self {
+			Self::UserCreationError(UserErrors::DatabaseError(_)) => StatusCode::BAD_REQUEST,
+			Self::InvalidCookie => StatusCode::FORBIDDEN,
+			Self::UserNotFound => StatusCode::NOT_FOUND,
+			Self::PasswordError(_) => StatusCode::BAD_REQUEST,
+			_ => StatusCode::INTERNAL_SERVER_ERROR,
+		}
+	}
+}
 
 /// User signup
 ///
 /// Creates a new user but doesn't log in the user
+///
 /// Currently like this because of future developements
 #[api_v2_operation]
 #[post("/signup")]
-pub async fn signup(db: Data<MongoDatabase>, new_user: Json<UserInput>) -> Result<Json<UserInfo>, HttpResponse> {
-	let username = &new_user.username;
-	let clear_password = &new_user.password;
-
-	let password = hash_password(clear_password).unwrap();
-
-	// Create a user.
-	let mut user = User::new_user(username, &password);
-
-	if let Ok(_) = user.save(&db, None).await {
-		Ok(Json(user.to_user_info()))
-	} else {
-		Err(HttpResponse::BadRequest().body("Username is already registered"))
-	}
+pub async fn signup(db: Data<MongoDatabase>, new_user: Json<UserInput>) -> Result<Json<UserInfo>, AuthErrors> {
+	// Create a user
+	let user = User::create_user(&db, new_user.into_inner()).await?;
+	Ok(Json(user.into()))
 }
 
 /// User login
@@ -46,40 +84,33 @@ pub async fn login(
 	credentials: Json<UserInput>,
 	session: Session,
 	db: Data<MongoDatabase>,
-) -> Result<Json<UserInfo>, HttpResponse> {
-	// let body = AcceptLoginRequest::new();
-	// let something = admin_api::accept_login_request(&ORY_HYDRA_CONFIGURATION, "123", body);
-
-	let maybe_user: Option<ObjectId> = session.get("user_id").unwrap();
-	if let Some(user_id) = maybe_user {
-		// We can be sure that the user exists if there is a session
-		let user = User::find_by_id(&db, &user_id).await.unwrap();
-		session.renew();
-		Ok(Json(user.to_user_info()))
-	} else {
-		// let find_user_result: Result<Option<User>, wither::WitherError> =
-		//     User::find_one(&db, doc! { "username": &credentials.username }, None).await;
-		// if let Ok(find_user) = find_user_result {
-		if let Some(user) = User::find_by_username(&db, &credentials.username).await {
-			let clear_password = &credentials.password;
-			let hashed_password = &user.password;
-
-			let password_verified = verify_password(hashed_password, clear_password);
-
-			if let Ok(_) = password_verified {
-				let info = user.to_user_info();
-				// If the user exists there is a user id
-				session.set("user_id", user.id.unwrap()).unwrap();
-				Ok(Json(info))
-			} else {
-				Err(HttpResponse::BadRequest().body("Wrong password"))
-			}
-		} else {
-			Err(HttpResponse::NotFound().body("User not found"))
+) -> Result<Json<UserInfo>, AuthErrors> {
+	match session.get("user_id")? {
+		Some(user_id) => {
+			// We can be sure that the user exists if there is a session, unless the cookie has been revoked
+			let user = User::find_by_id(&db, &user_id)
+				.await?
+				.ok_or(AuthErrors::InvalidCookie)?;
+			// Renew the session
+			session.renew();
+			// Give back user info
+			Ok(Json(user.into()))
 		}
-		// } else {
-		//     Err(HttpResponse::InternalServerError().body(""))
-		// }
+		None => {
+			// Find the user
+			let user = User::find_by_username(&db, &credentials.username)
+				.await?
+				.ok_or(AuthErrors::UserNotFound)?;
+
+			// Verify the password
+			verify_password(&user.password, &credentials.password)?;
+
+			// Create a session for the user
+			session.set("user_id", user.id.clone().unwrap())?;
+
+			// Give back user info
+			Ok(Json(user.into()))
+		}
 	}
 }
 
@@ -88,21 +119,21 @@ pub async fn login(
 /// Gets the current user info if he is logged in
 #[api_v2_operation]
 #[get("/user-info")]
-pub async fn user_info(session: Session, db: Data<MongoDatabase>) -> Result<Json<UserInfo>, HttpResponse> {
-	let maybe_id: Option<ObjectId> = session.get("user_id").unwrap();
+pub async fn user_info(session: Session, db: Data<MongoDatabase>) -> Result<Json<UserInfo>, AuthErrors> {
+	// Get the session
+	let id = session.get("user_id")?.ok_or(AuthErrors::UserNotLogged)?;
 
-	if let Some(id) = maybe_id {
-		let maybe_user = User::find_by_id(&db, &id).await;
-		if let Some(user) = maybe_user {
-			session.renew();
-			Ok(Json(user.to_user_info()))
-		} else {
-			session.clear();
-			Err(HttpResponse::Unauthorized().body("Error"))
-		}
-	} else {
-		Err(HttpResponse::Unauthorized().body("Not logged in"))
-	}
+	// Search for the user
+	let user = User::find_by_id(&db, &id).await?.ok_or_else(|| {
+		// If we're in here the user sent a revoked cookie, delete it
+		session.clear();
+		AuthErrors::InvalidCookie
+	})?;
+
+	// Renew the session
+	session.renew();
+	// Send the user info
+	Ok(Json(user.into()))
 }
 
 /// Logout
@@ -110,13 +141,8 @@ pub async fn user_info(session: Session, db: Data<MongoDatabase>) -> Result<Json
 /// Logs out the current user invalidating the session if he is logged in
 #[api_v2_operation]
 #[get("/logout")]
-pub async fn logout(session: Session) -> Result<HttpResponse, HttpResponse> {
-	let maybe_user: Option<ObjectId> = session.get("user_id").unwrap();
-
-	if let Some(_) = maybe_user {
-		session.clear();
-		Ok(HttpResponse::Ok().body("Logged out"))
-	} else {
-		Err(HttpResponse::BadRequest().body("Already logged out"))
-	}
+pub async fn logout(session: Session) -> Result<HttpResponse, AuthErrors> {
+	session.get("user_id")?.ok_or(AuthErrors::UserNotLogged)?;
+	session.clear();
+	Ok(HttpResponse::Ok().body("Logged out"))
 }

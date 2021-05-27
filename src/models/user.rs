@@ -1,10 +1,14 @@
 use paperclip::actix::Apiv2Schema;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 use wither::{
 	bson::{doc, oid::ObjectId},
 	mongodb::Database,
 	prelude::*,
+	WitherError,
 };
+
+use crate::utils::{hash_password, PasswordErrors};
 
 /// User representation
 #[derive(Debug, Model, Serialize, Deserialize)]
@@ -19,28 +23,39 @@ pub struct User {
 	pub password: String,
 }
 
+#[derive(Error, Debug)]
+pub enum UserErrors {
+	#[error("{0}")]
+	DatabaseError(#[from] WitherError),
+	#[error("{0}")]
+	HashError(#[from] PasswordErrors),
+}
+
 impl User {
-	pub fn new_user(username: &str, password: &str) -> Self {
-		User {
+	/// Create a new user
+	pub async fn create_user(db: &Database, input: UserInput) -> Result<Self, UserErrors> {
+		let UserInput { username, password } = input;
+
+		// Hash the password
+		let password = hash_password(&password)?;
+
+		let mut user = User {
 			id: None,
 			username: String::from(username),
 			password: String::from(password),
-		}
+		};
+
+		user.save(db, None).await?;
+
+		Ok(user)
 	}
 
-	pub fn to_user_info(&self) -> UserInfo {
-		UserInfo {
-			id: self.id.clone(),
-			username: self.username.clone(),
-		}
+	pub async fn find_by_id(db: &Database, id: &ObjectId) -> Result<Option<Self>, WitherError> {
+		User::find_one(&db, doc! { "_id": id }, None).await
 	}
 
-	pub async fn find_by_id(db: &Database, id: &ObjectId) -> Option<Self> {
-		User::find_one(&db, doc! { "_id": id }, None).await.unwrap()
-	}
-
-	pub async fn find_by_username(db: &Database, username: &str) -> Option<Self> {
-		User::find_one(&db, doc! { "username": username }, None).await.unwrap()
+	pub async fn find_by_username(db: &Database, username: &str) -> Result<Option<Self>, WitherError> {
+		User::find_one(&db, doc! { "username": username }, None).await
 	}
 }
 
@@ -54,7 +69,17 @@ pub struct UserInfo {
 	pub username: String,
 }
 
-/// New User Input
+impl From<User> for UserInfo {
+	fn from(user: User) -> Self {
+		let User { id, username, .. } = user;
+		UserInfo {
+			id,
+			username,
+		}
+	}
+}
+
+/// New user input data
 #[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
 pub struct UserInput {
 	/// The new user username, must be unique.

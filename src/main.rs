@@ -12,6 +12,7 @@ mod models;
 mod routes;
 mod settings;
 mod utils;
+mod auth;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

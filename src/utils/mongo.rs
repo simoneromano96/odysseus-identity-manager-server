@@ -1,9 +1,10 @@
 use log::info;
-use wither::mongodb::{Client, Database};
-use wither::Model;
+use wither::{
+	mongodb::{Client, Database},
+	Model,
+};
 
-use crate::models::User;
-use crate::settings::APP_SETTINGS;
+use crate::{models::User, settings::APP_SETTINGS};
 
 pub async fn init_database() -> Database {
 	let db = Client::with_uri_str(&APP_SETTINGS.mongo.uri)
