@@ -1,9 +1,6 @@
 use paperclip::actix::Apiv2Schema;
 use serde::{Deserialize, Serialize};
 
-
-
-
 /// New user input data
 #[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
 #[serde(rename_all = "camelCase")]

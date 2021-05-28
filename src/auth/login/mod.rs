@@ -23,7 +23,7 @@ use paperclip::actix::{
 };
 
 use url::Url;
-use wither::{mongodb::Database as MongoDatabase};
+use wither::mongodb::Database as MongoDatabase;
 
 use super::{LoginInput, OauthLoginRequest};
 
@@ -32,10 +32,8 @@ use super::{LoginInput, OauthLoginRequest};
 /// Starts the login flow, responds with a redirect
 #[api_v2_operation]
 #[get("/login")]
-pub async fn get_login(
-	oauth_request: Query<OauthLoginRequest>,
-) -> Result<HttpResponse, AuthErrors> {
-  info!("GET Login request");
+pub async fn get_login(oauth_request: Query<OauthLoginRequest>) -> Result<HttpResponse, AuthErrors> {
+	info!("GET Login request");
 
 	let login_challenge = oauth_request
 		.into_inner()
@@ -49,14 +47,12 @@ pub async fn get_login(
 			AuthErrors::HydraError
 		})?;
 
-	let mut redirect_to: Url = Url::parse_with_params(
-		"http://localhost:3000/login",
-		&[("login_challenge", &login_challenge)],
-	)?;
+	let mut redirect_to: Url =
+		Url::parse_with_params("http://localhost:3000/login", &[("login_challenge", &login_challenge)])?;
 
-  // User is already authenticated
+	// User is already authenticated
 	if ask_login_request.skip {
-    info!("User already authenticated");
+		info!("User already authenticated");
 		let subject = ask_login_request.subject;
 		let body = Some(AcceptLoginRequest::new(subject));
 
