@@ -73,8 +73,8 @@ pub async fn login(
 
 	if let Some(login_challenge) = oauth_request.into_inner().login_challenge {
 		info!("Handling a login challenge");
-		let body: AcceptLoginRequest = AcceptLoginRequest::new(user.id.clone().unwrap().to_string());
-		let login_request = admin_api::accept_login_request(&ORY_HYDRA_CONFIGURATION, &login_challenge, Some(body))
+		let body = Some(AcceptLoginRequest::new(user.id.clone().unwrap().to_string()));
+		let login_request = admin_api::accept_login_request(&ORY_HYDRA_CONFIGURATION, &login_challenge, body)
 			.await
 			.map_err(|_e| AuthErrors::HydraError)?;
 		
