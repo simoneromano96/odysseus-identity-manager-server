@@ -29,7 +29,7 @@ use super::{LoginInput, OauthLoginRequest};
 
 /// User login
 ///
-/// Logs in the user via the provided credentials, will set a cookie session
+/// Starts the login flow, responds with a redirect
 #[api_v2_operation]
 #[get("/login")]
 pub async fn get_login(
@@ -80,7 +80,7 @@ pub async fn get_login(
 
 /// User login
 ///
-/// Logs in the user via the provided credentials, will set a cookie session
+/// Logs in the user via the provided credentials, responds with a redirect to follow
 #[api_v2_operation]
 #[post("/login")]
 pub async fn post_login(
