@@ -10,4 +10,6 @@ pub enum UserErrors {
 	DatabaseError(#[from] WitherError),
 	#[error("{0}")]
 	HashError(#[from] PasswordErrors),
+	#[error("User not found")]
+	UserNotFound,
 }

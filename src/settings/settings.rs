@@ -1,8 +1,10 @@
 use std::env;
 
 use config::{Config, Environment, File};
+use log::info;
 use once_cell::sync::Lazy;
 use ory_hydra_client::apis::configuration::Configuration as OryConfiguration;
+// use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
 use super::{HydraSettings, LoggerSettings, MongoSettings, ServerSettings};
@@ -25,7 +27,7 @@ pub struct SessionSettings {
 	pub secret: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Settings {
 	/// Logger configuration
@@ -71,6 +73,8 @@ impl Settings {
 		// Deserialize configuration
 		let r: Settings = s.try_into().expect("Configuration error");
 
+		info!("{:?}", r);
+
 		r
 	}
 }
@@ -78,5 +82,7 @@ impl Settings {
 fn init_ory_config() -> OryConfiguration {
 	let mut configuration = OryConfiguration::new();
 	configuration.base_path = APP_SETTINGS.hydra.url.clone();
+	// configuration.client = Client::new();
+	info!("{:?}", configuration);
 	configuration
 }

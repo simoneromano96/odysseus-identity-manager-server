@@ -4,7 +4,7 @@ server:
   port: 8000
 # Hydra client configuration
 hydra: 
-  url: http://localhost:3000
+  url: http://127.0.0.1:4445
 # Logger configurations
 logger:
   # Logging level

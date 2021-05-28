@@ -1,6 +1,7 @@
 use actix_web::{http::StatusCode, Error as ActixError, HttpResponse, ResponseError};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use url::ParseError;
 use wither::WitherError;
 
 use crate::{user::UserErrors, utils::PasswordErrors};
@@ -18,7 +19,7 @@ pub enum AuthErrors {
 	DatabaseError(#[from] WitherError),
 	#[error("Could not create user")]
 	UserCreationError(#[from] UserErrors),
-	#[error("{0}")]
+	#[error("Password Error: {0}")]
 	PasswordError(#[from] PasswordErrors),
 	#[error("Invalid cookie")]
 	InvalidCookie,
@@ -28,6 +29,10 @@ pub enum AuthErrors {
 	UserNotLogged,
 	#[error("Ory hydra error")]
 	HydraError,
+	#[error("Missing parameters")]
+	MissingLoginChallenge,
+	#[error("Invalid URL: {0}")]
+	InvalidUrl(#[from] ParseError),
 }
 
 impl ResponseError for AuthErrors {
@@ -45,6 +50,7 @@ impl ResponseError for AuthErrors {
 			Self::UserNotLogged => StatusCode::FORBIDDEN,
 			Self::UserNotFound => StatusCode::NOT_FOUND,
 			Self::PasswordError(_) => StatusCode::BAD_REQUEST,
+			Self::MissingLoginChallenge => StatusCode::BAD_REQUEST,
 			_ => StatusCode::INTERNAL_SERVER_ERROR,
 		}
 	}

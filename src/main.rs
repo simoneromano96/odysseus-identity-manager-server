@@ -4,7 +4,7 @@ use actix_web::{self, cookie, middleware, App, HttpServer};
 use paperclip::actix::{web::scope, OpenApiExt};
 
 use crate::{
-	auth::{login, logout, signup, user_info},
+	auth::{get_login, post_login, logout, signup, user_info},
 	settings::APP_SETTINGS,
 	utils::{init_database, init_logger},
 };
@@ -41,7 +41,8 @@ async fn main() -> std::io::Result<()> {
 				scope("/api").service(
 					scope("/v1")
 						.service(signup)
-						.service(login)
+						.service(get_login)
+						.service(post_login)
 						.service(user_info)
 						.service(logout),
 				),

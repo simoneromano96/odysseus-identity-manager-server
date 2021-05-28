@@ -6,7 +6,7 @@ use wither::{
 	WitherError,
 };
 
-use crate::utils::hash_password;
+use crate::utils::{hash_password, verify_password};
 
 use super::{CreateUserInput, UserErrors};
 
@@ -38,6 +38,18 @@ impl User {
 		};
 
 		user.save(db, None).await?;
+
+		Ok(user)
+	}
+
+	pub async fn login(db: &Database, username: &str, password: &str) -> Result<Self, UserErrors> {
+		// Find the user
+		let user = Self::find_by_username(&db, &username)
+			.await?
+			.ok_or(UserErrors::UserNotFound)?;
+
+		// Verify the password
+		verify_password(&user.password, &password)?;
 
 		Ok(user)
 	}
