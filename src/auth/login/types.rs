@@ -13,20 +13,5 @@ pub struct LoginInput {
 
 #[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
 pub struct OauthLoginRequest {
-	pub login_challenge: Option<String>,
+	pub login_challenge: String,
 }
-
-#[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
-#[serde(rename_all = "camelCase")]
-pub struct OAuthLoginInfo {
-	pub redirect_to: String,
-}
-
-/*
-#[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
-#[serde(untagged)]
-pub enum LoginResponse {
-	LocalLogin(UserInfo),
-	OAuthLogin(OAuthLoginInfo),
-}
-*/

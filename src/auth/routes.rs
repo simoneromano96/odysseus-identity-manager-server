@@ -1,5 +1,5 @@
 use crate::{
-	auth::{AuthErrors, OAuthLoginInfo},
+	auth::{AuthErrors},
 	settings::ORY_HYDRA_CONFIGURATION,
 	user::{CreateUserInput, User, UserInfo},
 	utils::verify_password,

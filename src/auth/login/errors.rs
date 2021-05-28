@@ -12,7 +12,7 @@ struct ErrorResponse {
 }
 
 #[derive(Error, Debug)]
-pub enum AuthErrors {
+pub enum LoginErrors {
 	#[error("Internal server error")]
 	ActixError(#[from] ActixError),
 	#[error("Internal server error")]
@@ -23,13 +23,17 @@ pub enum AuthErrors {
 	PasswordError(#[from] PasswordErrors),
 	#[error("Invalid cookie")]
 	InvalidCookie,
-	#[error("User is not logged in")]
-	UserNotLogged,
+	#[error("User not found")]
+	UserNotFound,
+	#[error("Ory hydra error")]
+	HydraError,
+	#[error("Missing login challenge parameter")]
+	MissingLoginChallenge,
 	#[error("Invalid URL: {0}")]
 	InvalidUrl(#[from] ParseError),
 }
 
-impl ResponseError for AuthErrors {
+impl ResponseError for LoginErrors {
 	fn error_response(&self) -> HttpResponse {
 		let error_response = ErrorResponse {
 			error: self.to_string(),
@@ -41,8 +45,9 @@ impl ResponseError for AuthErrors {
 		match self {
 			Self::UserCreationError(UserErrors::DatabaseError(_)) => StatusCode::BAD_REQUEST,
 			Self::InvalidCookie => StatusCode::FORBIDDEN,
-			Self::UserNotLogged => StatusCode::FORBIDDEN,
+			Self::UserNotFound => StatusCode::NOT_FOUND,
 			Self::PasswordError(_) => StatusCode::BAD_REQUEST,
+			Self::MissingLoginChallenge => StatusCode::BAD_REQUEST,
 			_ => StatusCode::INTERNAL_SERVER_ERROR,
 		}
 	}

@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use url::ParseError;
 use wither::WitherError;
+use serde_qs::Error as QSError;
 
 use crate::{user::UserErrors, utils::PasswordErrors};
 
@@ -12,7 +13,7 @@ struct ErrorResponse {
 }
 
 #[derive(Error, Debug)]
-pub enum AuthErrors {
+pub enum ConsentErrors {
 	#[error("Internal server error")]
 	ActixError(#[from] ActixError),
 	#[error("Internal server error")]
@@ -23,13 +24,19 @@ pub enum AuthErrors {
 	PasswordError(#[from] PasswordErrors),
 	#[error("Invalid cookie")]
 	InvalidCookie,
-	#[error("User is not logged in")]
-	UserNotLogged,
+	#[error("User not found")]
+	UserNotFound,
+	#[error("Ory hydra error")]
+	HydraError,
+	#[error("Missing login challenge parameter")]
+	MissingLoginChallenge,
 	#[error("Invalid URL: {0}")]
 	InvalidUrl(#[from] ParseError),
+	#[error("Invalid Query Parameters: {0}")]
+	InvalidQueryParams(#[from] QSError),
 }
 
-impl ResponseError for AuthErrors {
+impl ResponseError for ConsentErrors {
 	fn error_response(&self) -> HttpResponse {
 		let error_response = ErrorResponse {
 			error: self.to_string(),
@@ -41,8 +48,9 @@ impl ResponseError for AuthErrors {
 		match self {
 			Self::UserCreationError(UserErrors::DatabaseError(_)) => StatusCode::BAD_REQUEST,
 			Self::InvalidCookie => StatusCode::FORBIDDEN,
-			Self::UserNotLogged => StatusCode::FORBIDDEN,
+			Self::UserNotFound => StatusCode::NOT_FOUND,
 			Self::PasswordError(_) => StatusCode::BAD_REQUEST,
+			Self::MissingLoginChallenge => StatusCode::BAD_REQUEST,
 			_ => StatusCode::INTERNAL_SERVER_ERROR,
 		}
 	}
