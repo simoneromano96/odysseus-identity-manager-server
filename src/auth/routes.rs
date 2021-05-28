@@ -6,23 +6,16 @@ use crate::{
 };
 
 use actix_session::Session;
-use actix_web::web::Query;
-use log::{error, info};
-use ory_hydra_client::{
-	apis::{
-		admin_api::{self, AcceptConsentRequestError, AcceptLoginRequestError},
-		configuration::Configuration,
-		Error as OryError, ResponseContent,
-	},
-	models::{AcceptConsentRequest, AcceptLoginRequest, CompletedRequest},
-};
+
+use log::{info};
+
 use paperclip::actix::{
 	api_v2_operation, get, post,
 	web::{Data, HttpResponse, Json},
 };
 use wither::{bson::oid::ObjectId, mongodb::Database as MongoDatabase};
 
-use super::{LoginInput, OauthLoginRequest};
+
 
 /// User signup
 ///

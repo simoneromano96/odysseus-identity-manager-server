@@ -33,8 +33,8 @@ impl User {
 
 		let mut user = User {
 			id: None,
-			username: String::from(username),
-			password: String::from(password),
+			username,
+			password,
 		};
 
 		user.save(db, None).await?;

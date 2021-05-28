@@ -3,7 +3,7 @@ use once_cell::sync::Lazy;
 use rand::rngs::OsRng;
 use thiserror::Error;
 
-static ARGON_2: Lazy<Argon2> = Lazy::new(|| Argon2::default());
+static ARGON_2: Lazy<Argon2> = Lazy::new(Argon2::default);
 
 #[derive(Error, Debug)]
 pub enum PasswordErrors {

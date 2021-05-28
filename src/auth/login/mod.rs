@@ -16,14 +16,14 @@ use ory_hydra_client::{
 	},
 	models::{AcceptConsentRequest, AcceptLoginRequest, CompletedRequest, LoginRequest},
 };
-use paperclip::actix::Apiv2Schema;
+
 use paperclip::actix::{
 	api_v2_operation, get, post,
 	web::{Data, HttpResponse, Json},
 };
-use serde::{Deserialize, Serialize};
+
 use url::Url;
-use wither::{bson::oid::ObjectId, mongodb::Database as MongoDatabase};
+use wither::{mongodb::Database as MongoDatabase};
 
 use super::{LoginInput, OauthLoginRequest};
 

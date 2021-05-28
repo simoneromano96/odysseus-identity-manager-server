@@ -1,8 +1,8 @@
 use paperclip::actix::Apiv2Schema;
 use serde::{Deserialize, Serialize};
-use wither::bson::oid::ObjectId;
 
-use crate::user::UserInfo;
+
+
 
 /// New user input data
 #[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
