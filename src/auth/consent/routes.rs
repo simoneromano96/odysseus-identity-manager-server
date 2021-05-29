@@ -1,24 +1,26 @@
-use crate::{settings::ORY_HYDRA_CONFIGURATION, user::User, utils::verify_password};
+use crate::{auth::ConsentQueryParams, settings::ORY_HYDRA_CONFIGURATION, user::User};
 
-use actix_session::Session;
 use actix_web::web::Query;
 use log::{error, info};
 use ory_hydra_client::{
 	apis::admin_api,
-	models::{AcceptConsentRequest, AcceptLoginRequest, CompletedRequest, ConsentRequest, LoginRequest},
+	models::{
+		AcceptConsentRequest, AcceptLoginRequest, CompletedRequest, ConsentRequest, ConsentRequestSession, LoginRequest,
+	},
 };
 use paperclip::actix::{
 	api_v2_operation, get, post,
 	web::{Data, HttpResponse, Json},
 };
+use serde_json;
 use url::Url;
-use wither::mongodb::Database as MongoDatabase;
+use wither::{bson::oid::ObjectId, mongodb::Database as MongoDatabase};
 
-use super::{ConsentErrors, OauthConsentRequest};
+use super::{ConsentErrors, OauthConsentBody, OauthConsentRequest};
 
 /// User login
 ///
-/// Starts the login flow, responds with a redirect
+/// Starts the consent flow, responds with a redirect
 #[api_v2_operation]
 #[get("/consent")]
 pub async fn get_consent(oauth_request: Query<OauthConsentRequest>) -> Result<HttpResponse, ConsentErrors> {
@@ -26,36 +28,43 @@ pub async fn get_consent(oauth_request: Query<OauthConsentRequest>) -> Result<Ht
 
 	let consent_challenge = oauth_request.into_inner().consent_challenge;
 
-	let ask_consent_request: ConsentRequest =
-		admin_api::get_consent_request(&ORY_HYDRA_CONFIGURATION, &consent_challenge)
-			.await
-			.map_err(|e| {
-				error!("{:?}", e);
-				ConsentErrors::HydraError
-			})?;
+	let ask_consent_request = admin_api::get_consent_request(&ORY_HYDRA_CONFIGURATION, &consent_challenge)
+		.await
+		.map_err(|e| {
+			error!("{:?}", e);
+			ConsentErrors::HydraError
+		})?;
 
-	let mut redirect_to: Url = Url::parse_with_params(
-		"http://localhost:3000/consent",
-		&[
-			("challenge", consent_challenge.clone()),
-			("client_name", ask_consent_request.client.unwrap().client_name.unwrap()),
-			(
-				"requested_scope",
-				serde_qs::to_string(&ask_consent_request.requested_scope)?,
-			),
-		],
-	)?;
+	let subject = ask_consent_request.subject.unwrap_or("".to_string());
+	let client_name = if let Some(client) = ask_consent_request.client {
+		client.client_name.unwrap_or("".to_string())
+	} else {
+		"".to_string()
+	};
+
+	info!("{:?}", &ask_consent_request.requested_scope);
+
+	let query_params = ConsentQueryParams {
+		challenge: consent_challenge.clone(),
+		client_name,
+		subject,
+		requested_scope: ask_consent_request.requested_scope.unwrap_or(vec![]).clone(),
+	};
+
+	let mut redirect_to: Url = Url::parse("http://localhost:3000/consent")?;
+
+	redirect_to.set_query(Some(&serde_qs::to_string(&query_params)?));
 
 	info!("{:?}", redirect_to);
 
 	// User is has already given consent
 	if ask_consent_request.skip.unwrap_or(false) {
 		info!("User has already given consent");
-		let subject = ask_consent_request.subject;
-		let body = Some(AcceptConsentRequest::new());
+		let mut body = AcceptConsentRequest::new();
+		body.grant_access_token_audience = ask_consent_request.requested_access_token_audience;
 
-		let accept_consent_request: CompletedRequest =
-			admin_api::accept_consent_request(&ORY_HYDRA_CONFIGURATION, &consent_challenge, body)
+		let accept_consent_request =
+			admin_api::accept_consent_request(&ORY_HYDRA_CONFIGURATION, &consent_challenge, Some(body))
 				.await
 				.map_err(|e| {
 					error!("{:?}", e);
@@ -75,62 +84,51 @@ pub async fn get_consent(oauth_request: Query<OauthConsentRequest>) -> Result<Ht
 // User login
 //
 // Logs in the user via the provided credentials, responds with a redirect to follow
-/*
 #[api_v2_operation]
 #[post("/consent")]
 pub async fn post_consent(
-	login_input: Json<LoginInput>,
 	oauth_request: Query<OauthConsentRequest>,
-	session: Session,
+	data: Json<OauthConsentBody>,
 	db: Data<MongoDatabase>,
+	// session: Session,
 ) -> Result<Json<CompletedRequest>, ConsentErrors> {
-	let login_challenge = oauth_request
-		.into_inner()
-		.login_challenge
-		.ok_or(ConsentErrors::MissingLoginChallenge)?;
+	let consent_challenge = oauth_request.into_inner().consent_challenge;
 
-	let user = match session.get("user_id")? {
-		Some(user_id) => {
-			// We can be sure that the user exists if there is a session, unless the cookie has been revoked
-			let user = User::find_by_id(&db, &user_id)
-				.await?
-				.ok_or(ConsentErrors::InvalidCookie)?;
-			// Renew the session
-			session.renew();
+	let ask_consent_request: ConsentRequest =
+		admin_api::get_consent_request(&ORY_HYDRA_CONFIGURATION, &consent_challenge)
+			.await
+			.map_err(|e| {
+				error!("{:?}", e);
+				ConsentErrors::HydraError
+			})?;
 
-			user
-		}
-		None => {
-			// Find the user
-			let user = User::find_by_username(&db, &login_input.username)
-				.await?
-				.ok_or(ConsentErrors::UserNotFound)?;
+	let subject: String = ask_consent_request.subject.ok_or(ConsentErrors::InvalidCookie)?;
+	info!("{:?}", &subject);
+	let id = ObjectId::with_string(&subject).unwrap();
+	info!("{:?}", &id);
+	let user = User::find_by_id(&db, &id).await?.ok_or(ConsentErrors::UserNotFound)?;
+	info!("{:?}", &user);
 
-			// Verify the password
-			verify_password(&user.password, &login_input.password)?;
-
-			info!("User logged in: {:?}", &user);
-
-			// Create a session for the user
-			session.set("user_id", user.id.clone().unwrap())?;
-
-			user
-		}
+	let session: ConsentRequestSession = ConsentRequestSession {
+		id_token: Some(serde_json::to_value(&user)?),
+		access_token: Some(serde_json::to_value(&user)?),
 	};
+	info!("{:?}", &session);
 
-	// let response;
+	let mut body = AcceptConsentRequest::new();
+	body.grant_access_token_audience = ask_consent_request.requested_access_token_audience;
+	body.grant_scope = Some(data.scopes.clone());
+	body.session = Some(Box::new(session));
+	body.remember = Some(true);
+	body.remember_for = Some(0);
 
-	info!("Handling a login challenge");
-	let body = Some(AcceptLoginRequest::new(user.id.clone().unwrap().to_string()));
-	let login_request = admin_api::accept_login_request(&ORY_HYDRA_CONFIGURATION, &login_challenge, body)
-		.await
-		.map_err(|e| {
-			error!("{:?}", e);
-			ConsentErrors::HydraError
-		})?;
+	let accept_consent_request: CompletedRequest =
+		admin_api::accept_consent_request(&ORY_HYDRA_CONFIGURATION, &consent_challenge, Some(body))
+			.await
+			.map_err(|e| {
+				error!("{:?}", e);
+				ConsentErrors::HydraError
+			})?;
 
-	info!("Hydra login response {:?}", login_request);
-
-	Ok(Json(login_request))
+	Ok(Json(accept_consent_request))
 }
-*/

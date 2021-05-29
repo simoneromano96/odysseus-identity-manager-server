@@ -4,6 +4,7 @@ use thiserror::Error;
 use url::ParseError;
 use wither::WitherError;
 use serde_qs::Error as QSError;
+use serde_json::Error as JsonError;
 
 use crate::{user::UserErrors, utils::PasswordErrors};
 
@@ -26,6 +27,8 @@ pub enum ConsentErrors {
 	InvalidCookie,
 	#[error("User not found")]
 	UserNotFound,
+	#[error("User is malformed: {0}")]
+	UserMalformed(#[from] JsonError),
 	#[error("Ory hydra error")]
 	HydraError,
 	#[error("Missing login challenge parameter")]

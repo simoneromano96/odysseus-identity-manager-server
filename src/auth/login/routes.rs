@@ -46,10 +46,12 @@ pub async fn get_login(oauth_request: Query<OauthLoginRequest>) -> Result<HttpRe
 	if ask_login_request.skip {
 		info!("User already authenticated");
 		let subject = ask_login_request.subject;
-		let body = Some(AcceptLoginRequest::new(subject));
+		let mut body = AcceptLoginRequest::new(subject.clone());
+		body.remember = Some(true);
+		body.remember_for = Some(0);
 
 		let accept_login_request: CompletedRequest =
-			admin_api::accept_login_request(&ORY_HYDRA_CONFIGURATION, &login_challenge, body)
+			admin_api::accept_login_request(&ORY_HYDRA_CONFIGURATION, &login_challenge, Some(body))
 				.await
 				.map_err(|e| {
 					error!("{:?}", e);

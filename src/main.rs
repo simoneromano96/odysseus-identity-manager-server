@@ -3,7 +3,7 @@ use actix_redis::RedisSession;
 use actix_web::{self, cookie, middleware, App, HttpServer};
 use paperclip::actix::{web::scope, OpenApiExt};
 
-use crate::{auth::{get_consent, get_login, logout, post_login, signup, user_info}, settings::APP_SETTINGS, utils::{init_database, init_logger}};
+use crate::{auth::{get_consent, get_login, logout, post_consent, post_login, signup, user_info}, settings::APP_SETTINGS, utils::{init_database, init_logger}};
 
 mod auth;
 mod settings;
@@ -40,6 +40,7 @@ async fn main() -> std::io::Result<()> {
 						.service(get_login)
 						.service(post_login)
 						.service(get_consent)
+						.service(post_consent)
 						.service(user_info)
 						.service(logout),
 				),
