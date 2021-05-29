@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 /// App and server configuration
 pub struct ServerSettings {
+	/// Client's uri
+	pub clienturi: String,
 	/// Server's port
 	pub port: u16,
 }

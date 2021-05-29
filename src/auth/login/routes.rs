@@ -1,4 +1,4 @@
-use crate::{settings::ORY_HYDRA_CONFIGURATION, user::User, utils::verify_password};
+use crate::{settings::ORY_HYDRA_CONFIGURATION, settings::APP_SETTINGS, user::User, utils::verify_password};
 
 use actix_session::Session;
 use actix_web::web::Query;
@@ -11,6 +11,8 @@ use paperclip::actix::{
 	api_v2_operation, get, post,
 	web::{Data, HttpResponse, Json},
 };
+use serde_json;
+use serde_qs;
 use url::Url;
 use wither::mongodb::Database as MongoDatabase;
 
@@ -24,7 +26,7 @@ use super::{LoginErrors, LoginInput, OauthLoginRequest};
 pub async fn get_login(oauth_request: Query<OauthLoginRequest>) -> Result<HttpResponse, LoginErrors> {
 	info!("GET Login request");
 
-	let login_challenge = oauth_request.into_inner().login_challenge;
+	let login_challenge = oauth_request.into_inner().challenge;
 
 	let ask_login_request: LoginRequest = admin_api::get_login_request(&ORY_HYDRA_CONFIGURATION, &login_challenge)
 		.await
@@ -34,6 +36,11 @@ pub async fn get_login(oauth_request: Query<OauthLoginRequest>) -> Result<HttpRe
 		})?;
 
 	info!("{:?}", &ask_login_request);
+
+	let mut redirect_to: Url = Url::parse(&APP_SETTINGS.server.clienturi)?;
+
+	// redirect_to.set_path("/login");
+	// redirect_to.set_query(Some());
 
 	let mut redirect_to: Url = Url::parse_with_params(
 		"http://localhost:3000/login",
@@ -79,7 +86,7 @@ pub async fn post_login(
 	session: Session,
 	db: Data<MongoDatabase>,
 ) -> Result<Json<CompletedRequest>, LoginErrors> {
-	let login_challenge = oauth_request.into_inner().login_challenge;
+	let login_challenge = oauth_request.into_inner().challenge;
 
 	let user = match session.get("user_id")? {
 		Some(user_id) => {
@@ -113,9 +120,11 @@ pub async fn post_login(
 	// let response;
 
 	info!("Handling a login challenge");
+
 	let mut body = AcceptLoginRequest::new(user.id.clone().unwrap().to_string());
 	body.remember = Some(true);
 	body.remember_for = Some(0);
+	
 	let login_request = admin_api::accept_login_request(&ORY_HYDRA_CONFIGURATION, &login_challenge, Some(body))
 		.await
 		.map_err(|e| {

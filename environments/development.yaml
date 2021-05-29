@@ -2,9 +2,12 @@
 server:
   # The port exposed by the app
   port: 8000
+  # Odysseus client URI
+  clienturi: http://localhost:3000
 # Hydra client configuration
-hydra: 
-  url: http://127.0.0.1:4445
+hydra:
+  # Ory hydra server URI
+  uri: http://127.0.0.1:4445
 # Logger configurations
 logger:
   # Logging level
@@ -23,4 +26,5 @@ redis:
   uri: localhost:6379
 # Session
 session:
+  # Encryption secret
   secret: N7WoK3mG7lSb0CpK8UhAabUZNi27n5ub

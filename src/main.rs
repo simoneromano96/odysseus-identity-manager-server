@@ -3,7 +3,11 @@ use actix_redis::RedisSession;
 use actix_web::{self, cookie, middleware, App, HttpServer};
 use paperclip::actix::{web::scope, OpenApiExt};
 
-use crate::{auth::{get_consent, get_login, logout, post_consent, post_login, signup, user_info}, settings::APP_SETTINGS, utils::{init_database, init_logger}};
+use crate::{
+	auth::{get_consent, get_login, logout, post_consent, post_login, signup, user_info},
+	settings::APP_SETTINGS,
+	utils::{init_database, init_logger},
+};
 
 mod auth;
 mod settings;
@@ -29,7 +33,15 @@ async fn main() -> std::io::Result<()> {
 					// allow the cookie only from the current domain
 					.cookie_same_site(cookie::SameSite::Lax),
 			)
-			.wrap(Cors::permissive())
+			.wrap(
+				Cors::default()
+					.allow_any_method()
+					.allow_any_header()
+					.expose_any_header()
+					.supports_credentials()
+					.max_age(24 * 60 * 60)
+					.allowed_origin(&APP_SETTINGS.server.clienturi),
+			)
 			.data(identity_database.clone())
 			// Record services and routes from this line.
 			.wrap_api()

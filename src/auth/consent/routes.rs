@@ -13,6 +13,7 @@ use paperclip::actix::{
 	web::{Data, HttpResponse, Json},
 };
 use serde_json;
+use serde_qs;
 use url::Url;
 use wither::{bson::oid::ObjectId, mongodb::Database as MongoDatabase};
 
@@ -26,7 +27,7 @@ use super::{ConsentErrors, OauthConsentBody, OauthConsentRequest};
 pub async fn get_consent(oauth_request: Query<OauthConsentRequest>) -> Result<HttpResponse, ConsentErrors> {
 	info!("GET Consent request");
 
-	let consent_challenge = oauth_request.into_inner().consent_challenge;
+	let consent_challenge = oauth_request.into_inner().challenge;
 
 	let ask_consent_request = admin_api::get_consent_request(&ORY_HYDRA_CONFIGURATION, &consent_challenge)
 		.await
@@ -92,7 +93,7 @@ pub async fn post_consent(
 	db: Data<MongoDatabase>,
 	// session: Session,
 ) -> Result<Json<CompletedRequest>, ConsentErrors> {
-	let consent_challenge = oauth_request.into_inner().consent_challenge;
+	let consent_challenge = oauth_request.into_inner().challenge;
 
 	let ask_consent_request: ConsentRequest =
 		admin_api::get_consent_request(&ORY_HYDRA_CONFIGURATION, &consent_challenge)

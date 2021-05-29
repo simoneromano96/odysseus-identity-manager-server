@@ -38,7 +38,7 @@ pub struct Settings {
 	pub mongo: MongoSettings,
 	/// Redis configuration
 	pub redis: RedisSettings,
-	/// HTTP server configuration
+	/// HTTP server and app configuration
 	pub server: ServerSettings,
 	/// Session configuration
 	pub session: SessionSettings,
