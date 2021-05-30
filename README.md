@@ -1,5 +1,7 @@
 # Odysseus identity manager server
 
+NOTE: USES NIGHTLY RUST! This is because of `paperclip`.
+
 ## Environment variables
 
 * APP_SERVER_PORT: The server will listen on this port
