@@ -1,7 +1,4 @@
-use crate::{
-	auth::handle_accept_login_request, auth::Metadata, settings::APP_SETTINGS, settings::ORY_HYDRA_CONFIGURATION,
-	user::User, utils::verify_password,
-};
+use crate::{auth::Metadata, auth::{AcceptedRequest, handle_accept_login_request}, settings::APP_SETTINGS, settings::ORY_HYDRA_CONFIGURATION, user::User, utils::verify_password};
 
 use actix_session::Session;
 use actix_web::web::Query;
@@ -63,7 +60,7 @@ pub async fn post_login(
 	oauth_request: Query<OauthLoginRequest>,
 	session: Session,
 	db: Data<MongoDatabase>,
-) -> Result<Json<CompletedRequest>, LoginErrors> {
+) -> Result<Json<AcceptedRequest>, LoginErrors> {
 	let login_challenge = oauth_request.into_inner().login_challenge;
 
 	let user = match session.get("user_id")? {
@@ -91,5 +88,5 @@ pub async fn post_login(
 	let subject = user.id.clone().unwrap().to_string();
 	let accept_login_request = handle_accept_login_request(&subject, &login_challenge).await?;
 
-	Ok(Json(accept_login_request))
+	Ok(Json(accept_login_request.into()))
 }

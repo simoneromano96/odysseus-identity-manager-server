@@ -1,4 +1,4 @@
-use crate::{auth::{ConsentQueryParams, Metadata, create_user_session, handle_accept_consent_request}, settings::{APP_SETTINGS, ORY_HYDRA_CONFIGURATION}, user::User};
+use crate::{auth::{AcceptedRequest, ConsentQueryParams, Metadata, create_user_session, handle_accept_consent_request}, settings::{APP_SETTINGS, ORY_HYDRA_CONFIGURATION}, user::User};
 
 use actix_web::web::Query;
 use log::{error, info};
@@ -107,7 +107,7 @@ pub async fn post_consent(
 	data: Json<OauthConsentBody>,
 	db: Data<MongoDatabase>,
 	// session: Session,
-) -> Result<Json<CompletedRequest>, ConsentErrors> {
+) -> Result<Json<AcceptedRequest>, ConsentErrors> {
 	let consent_challenge = oauth_request.into_inner().consent_challenge;
 
 	let ask_consent_request: ConsentRequest =
@@ -126,5 +126,5 @@ pub async fn post_consent(
 	let accept_consent_request =
 		handle_accept_consent_request(subject, &db, &ask_consent_request, &data.scopes, &consent_challenge).await?;
 
-	Ok(Json(accept_consent_request))
+	Ok(Json(accept_consent_request.into()))
 }
