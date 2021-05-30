@@ -88,15 +88,15 @@ fn init_ory_config() -> OryConfiguration {
 
 	// Setup reqwest client
 	let mut headers = header::HeaderMap::new();
-	let basic_auth_plain = format!(
-		"Basic {}:{}",
-		&APP_SETTINGS.hydra.username, &APP_SETTINGS.hydra.password
-	);
-	let basic_auth_encoded = b64encode(basic_auth_plain);
+	let credentials = b64encode(format!(
+		"{}:{}",
+		&APP_SETTINGS.hydra.username, &APP_SETTINGS.hydra.password,
+	));
+	let basic_auth = format!("Basic {}", credentials);
 
 	headers.insert(
 		header::AUTHORIZATION,
-		header::HeaderValue::from_str(&basic_auth_encoded).expect("Could not create basic authorization header"),
+		header::HeaderValue::from_str(&basic_auth).expect("Could not create basic authorization header"),
 	);
 
 	let client = reqwest::Client::builder()
