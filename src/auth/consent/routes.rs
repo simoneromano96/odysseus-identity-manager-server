@@ -1,7 +1,7 @@
 use crate::{auth::{AcceptedRequest, ConsentQueryParams, Metadata, create_user_session, handle_accept_consent_request}, settings::{APP_SETTINGS, ORY_HYDRA_CONFIGURATION}, user::User};
 
 use actix_web::web::Query;
-use log::{error, info};
+use log::{error};
 use ory_hydra_client::{
 	apis::admin_api,
 	models::{

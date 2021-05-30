@@ -11,7 +11,7 @@ use log::info;
 
 use paperclip::actix::{
 	api_v2_operation, get, post,
-	web::{Data, HttpResponse, Json},
+	web::{Data, Json},
 };
 use wither::{bson::oid::ObjectId, mongodb::Database as MongoDatabase};
 

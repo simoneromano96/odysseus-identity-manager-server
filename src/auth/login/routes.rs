@@ -2,10 +2,10 @@ use crate::{auth::Metadata, auth::{AcceptedRequest, handle_accept_login_request}
 
 use actix_session::Session;
 use actix_web::web::Query;
-use log::{error, info};
+use log::{error};
 use ory_hydra_client::{
 	apis::admin_api,
-	models::{CompletedRequest, ConsentRequest, LoginRequest},
+	models::{LoginRequest},
 };
 use paperclip::actix::{
 	api_v2_operation, get, post,
