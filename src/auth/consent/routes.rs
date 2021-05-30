@@ -1,5 +1,5 @@
 use crate::{
-	auth::ConsentQueryParams,
+	auth::{create_user_session, handle_accept_consent_request, ConsentQueryParams},
 	settings::{APP_SETTINGS, ORY_HYDRA_CONFIGURATION},
 	user::User,
 };
@@ -43,9 +43,15 @@ pub async fn get_consent(
 			ConsentErrors::HydraError
 		})?;
 
-	let ConsentRequest { subject, client, requested_scope, challenge, .. } = ask_consent_request.clone();
+	let ConsentRequest {
+		subject,
+		client,
+		requested_scope,
+		challenge,
+		..
+	} = ask_consent_request.clone();
 
-	let subject = subject.unwrap_or("".to_string()) ;
+	let subject = subject.unwrap_or("".to_string());
 	let requested_scope = requested_scope.unwrap_or(vec![]);
 
 	let client_name = match client {
@@ -69,20 +75,14 @@ pub async fn get_consent(
 
 	// User is has already given consent
 	if ask_consent_request.skip.unwrap_or(false) {
-		info!("User has already given consent");
-
-		let id = ObjectId::with_string(&subject).unwrap();
-		info!("{:?}", &id);
-		let user = User::find_by_id(&db, &id).await?.ok_or(ConsentErrors::UserNotFound)?;
-		info!("{:?}", &user);
-
-		let session: ConsentRequestSession = ConsentRequestSession {
-			id_token: Some(serde_json::to_value(&user)?),
-			access_token: Some(serde_json::to_value(&user)?),
-		};
-
-		let accept_consent_request =
-			handle_accept_consent_request(&ask_consent_request, &requested_scope, &session, &consent_challenge).await?;
+		let accept_consent_request = handle_accept_consent_request(
+			&subject,
+			&db,
+			&ask_consent_request,
+			&requested_scope,
+			&consent_challenge,
+		)
+		.await?;
 
 		redirect_to = Url::parse(&accept_consent_request.redirect_to)?;
 	}
@@ -119,40 +119,9 @@ pub async fn post_consent(
 		.subject
 		.as_ref()
 		.ok_or(ConsentErrors::InvalidCookie)?;
-	info!("{:?}", &subject);
-	let id = ObjectId::with_string(&subject).unwrap();
-	info!("{:?}", &id);
-	let user = User::find_by_id(&db, &id).await?.ok_or(ConsentErrors::UserNotFound)?;
-	info!("{:?}", &user);
 
-	let session: ConsentRequestSession = ConsentRequestSession {
-		id_token: Some(serde_json::to_value(&user)?),
-		access_token: Some(serde_json::to_value(&user)?),
-	};
-	info!("{:?}", &session);
 	let accept_consent_request =
-		handle_accept_consent_request(&ask_consent_request, &data.scopes, &session, &consent_challenge).await?;
-	Ok(Json(accept_consent_request))
-}
+		handle_accept_consent_request(subject, &db, &ask_consent_request, &data.scopes, &consent_challenge).await?;
 
-async fn handle_accept_consent_request(
-	ask_consent_request: &ConsentRequest,
-	scopes: &Vec<String>,
-	session: &ConsentRequestSession,
-	consent_challenge: &str,
-) -> Result<CompletedRequest, ConsentErrors> {
-	let mut body = AcceptConsentRequest::new();
-	body.grant_access_token_audience = ask_consent_request.requested_access_token_audience.clone();
-	body.grant_scope = Some(scopes.clone());
-	body.session = Some(Box::new(session.clone()));
-	body.remember = Some(true);
-	body.remember_for = Some(0);
-	let accept_consent_request: CompletedRequest =
-		admin_api::accept_consent_request(&ORY_HYDRA_CONFIGURATION, &consent_challenge, Some(body))
-			.await
-			.map_err(|e| {
-				error!("{:?}", e);
-				ConsentErrors::HydraError
-			})?;
-	Ok(accept_consent_request)
+	Ok(Json(accept_consent_request))
 }

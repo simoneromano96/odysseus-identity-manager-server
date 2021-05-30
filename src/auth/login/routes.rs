@@ -1,4 +1,4 @@
-use crate::{auth::accept_login_request, settings::APP_SETTINGS, settings::ORY_HYDRA_CONFIGURATION, user::User, utils::verify_password};
+use crate::{auth::handle_accept_login_request, settings::APP_SETTINGS, settings::ORY_HYDRA_CONFIGURATION, user::User, utils::verify_password};
 
 use actix_session::Session;
 use actix_web::web::Query;
@@ -48,7 +48,7 @@ pub async fn get_login(oauth_request: Query<OauthLoginRequest>) -> Result<HttpRe
 		info!("User already authenticated");
 
 		let subject = ask_login_request.subject;
-		let accept_login_request = accept_login_request(&subject, &login_challenge).await?;
+		let accept_login_request = handle_accept_login_request(&subject, &login_challenge).await?;
 		redirect_to = Url::parse(&accept_login_request.redirect_to)?;
 	}
 
@@ -105,7 +105,7 @@ pub async fn post_login(
 
 	info!("Handling a login challenge");
 	let subject = user.id.clone().unwrap().to_string();
-	let accept_login_request = accept_login_request(&subject, &login_challenge).await?;
+	let accept_login_request = handle_accept_login_request(&subject, &login_challenge).await?;
 
 	Ok(Json(accept_login_request))
 }
