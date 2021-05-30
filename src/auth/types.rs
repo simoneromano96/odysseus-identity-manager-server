@@ -15,3 +15,10 @@ impl From<CompletedRequest> for AcceptedRequest {
 		}
 	}
 }
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Apiv2Schema)]
+#[serde(rename_all = "camelCase")]
+pub struct LoggedOutResponse {
+	/// This should always be true
+	pub logged_out: bool,
+}

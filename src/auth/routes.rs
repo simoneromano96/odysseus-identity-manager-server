@@ -1,5 +1,5 @@
 use crate::{
-	auth::AuthErrors,
+	auth::{AuthErrors, LoggedOutResponse},
 	settings::ORY_HYDRA_CONFIGURATION,
 	user::{CreateUserInput, User, UserInfo},
 	utils::verify_password,
@@ -56,11 +56,11 @@ pub async fn user_info(session: Session, db: Data<MongoDatabase>) -> Result<Json
 /// Logs out the current user invalidating the session if he is logged in
 #[api_v2_operation]
 #[get("/logout")]
-pub async fn logout(session: Session) -> Result<HttpResponse, AuthErrors> {
+pub async fn logout(session: Session) -> Result<Json<LoggedOutResponse>, AuthErrors> {
 	info!("Logout request");
 	let _: ObjectId = session.get("user_id")?.ok_or(AuthErrors::UserNotLogged)?;
 	info!("Got a logged user");
 	session.clear();
 	info!("Cleaned session");
-	Ok(HttpResponse::Ok().body("Logged out"))
+	Ok(Json(LoggedOutResponse { logged_out: true }))
 }
