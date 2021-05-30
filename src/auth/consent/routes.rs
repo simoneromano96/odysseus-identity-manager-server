@@ -1,8 +1,4 @@
-use crate::{
-	auth::{create_user_session, handle_accept_consent_request, ConsentQueryParams},
-	settings::{APP_SETTINGS, ORY_HYDRA_CONFIGURATION},
-	user::User,
-};
+use crate::{auth::{ConsentQueryParams, Metadata, create_user_session, handle_accept_consent_request}, settings::{APP_SETTINGS, ORY_HYDRA_CONFIGURATION}, user::User};
 
 use actix_web::web::Query;
 use log::{error, info};
@@ -32,8 +28,6 @@ pub async fn get_consent(
 	oauth_request: Query<OauthConsentRequest>,
 	db: Data<MongoDatabase>,
 ) -> Result<HttpResponse, ConsentErrors> {
-	info!("GET Consent request");
-
 	let consent_challenge = oauth_request.into_inner().consent_challenge;
 
 	let ask_consent_request = admin_api::get_consent_request(&ORY_HYDRA_CONFIGURATION, &consent_challenge)
@@ -54,8 +48,8 @@ pub async fn get_consent(
 	let subject = subject.unwrap_or_default();
 	let requested_scope = requested_scope.unwrap_or_default();
 
-	let client_name = match client {
-		Some(client) => client.client_name.unwrap_or_default(),
+	let client_name = match &client {
+		Some(client) => client.clone().client_name.unwrap_or_default(),
 		None => "".to_string(),
 	};
 
@@ -71,10 +65,19 @@ pub async fn get_consent(
 	redirect_to.set_path("/consent");
 	redirect_to.set_query(Some(&serde_qs::to_string(&query_params)?));
 
-	info!("{:?}", redirect_to);
+	let metadata = match client {
+		Some(client) => {
+			if let Some(metadata) = client.metadata {
+				serde_json::from_value(metadata)?
+			} else {
+				Metadata::default()
+			}
+		},
+		None => Metadata::default(),
+	};
 
-	// User is has already given consent
-	if ask_consent_request.skip.unwrap_or(false) {
+	// If the oauth client is trusted or the User has already given consent, accept the consent
+	if metadata.is_trusted || ask_consent_request.skip.unwrap_or(false) {
 		let accept_consent_request = handle_accept_consent_request(
 			&subject,
 			&db,

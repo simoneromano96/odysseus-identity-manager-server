@@ -40,7 +40,7 @@ pub fn init_logger() {
 		.appender(Appender::builder().build("console_appender", Box::new(console_appender)))
 		.appender(
 			Appender::builder()
-				.filter(Box::new(ThresholdFilter::new(LevelFilter::Info)))
+				.filter(Box::new(ThresholdFilter::new(LevelFilter::Trace)))
 				.build("file_appender", Box::new(file_appender)),
 		)
 		.build(

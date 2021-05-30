@@ -12,7 +12,7 @@ use super::ConsentErrors;
 pub async fn create_user_session(subject: &str, db: &MongoDatabase) -> Result<ConsentRequestSession, ConsentErrors> {
 	let id = ObjectId::with_string(subject).unwrap();
 	let user = User::find_by_id(db, &id).await?.ok_or(ConsentErrors::UserNotFound)?;
-	let session: ConsentRequestSession = ConsentRequestSession {
+	let session = ConsentRequestSession {
 		id_token: Some(serde_json::to_value(&user)?),
 		access_token: Some(serde_json::to_value(&user)?),
 	};

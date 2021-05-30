@@ -1,6 +1,6 @@
 use crate::{
-	auth::handle_accept_login_request, settings::APP_SETTINGS, settings::ORY_HYDRA_CONFIGURATION, user::User,
-	utils::verify_password,
+	auth::handle_accept_login_request, auth::Metadata, settings::APP_SETTINGS, settings::ORY_HYDRA_CONFIGURATION,
+	user::User, utils::verify_password,
 };
 
 use actix_session::Session;
@@ -8,7 +8,7 @@ use actix_web::web::Query;
 use log::{error, info};
 use ory_hydra_client::{
 	apis::admin_api,
-	models::{CompletedRequest, LoginRequest},
+	models::{CompletedRequest, ConsentRequest, LoginRequest},
 };
 use paperclip::actix::{
 	api_v2_operation, get, post,
@@ -25,8 +25,6 @@ use super::{LoginErrors, LoginInput, OauthLoginRequest};
 #[api_v2_operation]
 #[get("/login")]
 pub async fn get_login(oauth_request: Query<OauthLoginRequest>) -> Result<HttpResponse, LoginErrors> {
-	info!("GET Login request");
-
 	let login_challenge = oauth_request.into_inner().login_challenge;
 
 	let ask_login_request: LoginRequest = admin_api::get_login_request(&ORY_HYDRA_CONFIGURATION, &login_challenge)
@@ -36,20 +34,13 @@ pub async fn get_login(oauth_request: Query<OauthLoginRequest>) -> Result<HttpRe
 			LoginErrors::HydraError
 		})?;
 
-	info!("{:?}", &ask_login_request);
-
-	let mut redirect_to: Url = Url::parse(&APP_SETTINGS.server.clienturi)?;
+	let mut redirect_to = Url::parse(&APP_SETTINGS.server.clienturi)?;
 
 	redirect_to.set_path("/login");
 	redirect_to.set_query(Some(&format!("login_challenge={}", ask_login_request.challenge)));
 
-	info!("{:?}", &redirect_to);
-	info!("{:?}", &ask_login_request.client);
-
 	// User is already authenticated
 	if ask_login_request.skip {
-		info!("User already authenticated");
-
 		let subject = ask_login_request.subject;
 		let accept_login_request = handle_accept_login_request(&subject, &login_challenge).await?;
 		redirect_to = Url::parse(&accept_login_request.redirect_to)?;
@@ -88,14 +79,7 @@ pub async fn post_login(
 		}
 		None => {
 			// Find the user
-			let user = User::find_by_username(&db, &login_input.username)
-				.await?
-				.ok_or(LoginErrors::UserNotFound)?;
-
-			// Verify the password
-			verify_password(&user.password, &login_input.password)?;
-
-			info!("User logged in: {:?}", &user);
+			let user = User::login(&db, &login_input.username, &login_input.password).await?;
 
 			// Create a session for the user
 			session.set("user_id", user.id.clone().unwrap())?;
@@ -104,9 +88,6 @@ pub async fn post_login(
 		}
 	};
 
-	// let response;
-
-	info!("Handling a login challenge");
 	let subject = user.id.clone().unwrap().to_string();
 	let accept_login_request = handle_accept_login_request(&subject, &login_challenge).await?;
 

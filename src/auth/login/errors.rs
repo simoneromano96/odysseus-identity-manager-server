@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use url::ParseError;
 use wither::WitherError;
+use serde_json::Error as JSONError;
 
 use crate::{user::UserErrors, utils::PasswordErrors};
 
@@ -31,6 +32,8 @@ pub enum LoginErrors {
 	MissingLoginChallenge,
 	#[error("Invalid URL: {0}")]
 	InvalidUrl(#[from] ParseError),
+	#[error("Internal server error: {0}")]
+	JSONParseError(#[from] JSONError),
 }
 
 impl ResponseError for LoginErrors {
