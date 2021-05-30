@@ -82,6 +82,10 @@ impl Settings {
 fn init_ory_config() -> OryConfiguration {
 	let mut configuration = OryConfiguration::new();
 	configuration.base_path = APP_SETTINGS.hydra.uri.clone();
+	configuration.basic_auth = Some((
+		APP_SETTINGS.hydra.username.clone(),
+		Some(APP_SETTINGS.hydra.password.clone()),
+	));
 	// configuration.client = Client::new();
 	info!("{:?}", configuration);
 	configuration

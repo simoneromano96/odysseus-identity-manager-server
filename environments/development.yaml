@@ -8,6 +8,10 @@ server:
 hydra:
   # Ory hydra server URI
   uri: http://127.0.0.1:4445
+  # Basic auth username
+  username: odysseus
+  # Basic auth password
+  password: odysseus
 # Logger configurations
 logger:
   # Logging level

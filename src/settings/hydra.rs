@@ -6,4 +6,8 @@ use serde::{Deserialize, Serialize};
 pub struct HydraSettings {
 	/// The url path for the ORY hydra server
 	pub uri: String,
+	/// The basic auth username
+	pub username: String,
+	/// The basic auth password
+	pub password: String,
 }
