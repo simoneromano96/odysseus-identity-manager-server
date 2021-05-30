@@ -3,13 +3,13 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
 pub struct OauthConsentRequest {
-	pub challenge: String,
+	pub consent_challenge: String,
 }
 
 
 #[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
 pub struct ConsentQueryParams {
-	pub challenge: String,
+	pub consent_challenge: String,
 	pub client_name: String,
 	pub subject: String,
 	pub requested_scope: Vec<String>,

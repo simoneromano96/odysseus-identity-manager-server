@@ -24,7 +24,7 @@ use super::{LoginErrors, LoginInput, OauthLoginRequest};
 pub async fn get_login(oauth_request: Query<OauthLoginRequest>) -> Result<HttpResponse, LoginErrors> {
 	info!("GET Login request");
 
-	let login_challenge = oauth_request.into_inner().challenge;
+	let login_challenge = oauth_request.into_inner().login_challenge;
 
 	let ask_login_request: LoginRequest = admin_api::get_login_request(&ORY_HYDRA_CONFIGURATION, &login_challenge)
 		.await
@@ -38,7 +38,7 @@ pub async fn get_login(oauth_request: Query<OauthLoginRequest>) -> Result<HttpRe
 	let mut redirect_to: Url = Url::parse(&APP_SETTINGS.server.clienturi)?;
 
 	redirect_to.set_path("/login");
-	redirect_to.set_query(Some(&format!("challenge={}", ask_login_request.challenge)));
+	redirect_to.set_query(Some(&format!("login_challenge={}", ask_login_request.challenge)));
 
 	info!("{:?}", &redirect_to);
 	info!("{:?}", &ask_login_request.client);
@@ -70,7 +70,7 @@ pub async fn post_login(
 	session: Session,
 	db: Data<MongoDatabase>,
 ) -> Result<Json<CompletedRequest>, LoginErrors> {
-	let login_challenge = oauth_request.into_inner().challenge;
+	let login_challenge = oauth_request.into_inner().login_challenge;
 
 	let user = match session.get("user_id")? {
 		Some(user_id) => {
