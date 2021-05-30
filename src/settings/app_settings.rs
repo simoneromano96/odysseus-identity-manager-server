@@ -80,13 +80,39 @@ impl Settings {
 }
 
 fn init_ory_config() -> OryConfiguration {
+	use base64::encode as b64encode;
+	use reqwest::header;
+
 	let mut configuration = OryConfiguration::new();
 	configuration.base_path = APP_SETTINGS.hydra.uri.clone();
-	configuration.basic_auth = Some((
-		APP_SETTINGS.hydra.username.clone(),
-		Some(APP_SETTINGS.hydra.password.clone()),
-	));
-	// configuration.client = Client::new();
+
+	// Setup reqwest client
+	let mut headers = header::HeaderMap::new();
+	let basic_auth_plain = format!(
+		"Basic {}:{}",
+		&APP_SETTINGS.hydra.username, &APP_SETTINGS.hydra.password
+	);
+	let basic_auth_encoded = b64encode(basic_auth_plain);
+
+	headers.insert(
+		header::AUTHORIZATION,
+		header::HeaderValue::from_str(&basic_auth_encoded).expect("Could not create basic authorization header"),
+	);
+
+	let client = reqwest::Client::builder()
+		.default_headers(headers)
+		.build()
+		.expect("Could not create client");
+
+	// This does not work...
+	// configuration.basic_auth = Some((
+	// 	APP_SETTINGS.hydra.username.clone(),
+	// 	Some(APP_SETTINGS.hydra.password.clone()),
+	// ));
+	
+	configuration.client = client;
+
 	info!("{:?}", configuration);
+	
 	configuration
 }

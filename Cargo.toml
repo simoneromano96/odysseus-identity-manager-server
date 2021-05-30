@@ -18,6 +18,8 @@ actix-session = "0.4.1"
 actix-web = "3.3.2"
 # Password hashing
 argon2 = "0.2.0"
+# Base64 encode/decode
+base64 = "0.13.0"
 # Configuration helper
 config = "0.11.0"
 # Basic logging
@@ -32,6 +34,8 @@ ory-hydra-client = { git="https://github.com/simoneromano96/sdk.git", path="/cli
 paperclip = { git = "https://github.com/wafflespeanut/paperclip.git", rev = "20ec2e954dfb15613807130105a41e8f4b91066e", features = ["actix3-nightly", "actix-session"] }
 # Cryptographically secure random
 rand = "0.8.3"
+# Reqwest http client
+reqwest = "0.10.10"
 # Serialize and deserialize
 serde = "1.0.126"
 # JSON ser/de
