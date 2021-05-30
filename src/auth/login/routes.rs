@@ -41,6 +41,7 @@ pub async fn get_login(oauth_request: Query<OauthLoginRequest>) -> Result<HttpRe
 	redirect_to.set_query(Some(&format!("challenge={}", ask_login_request.challenge)));
 
 	info!("{:?}", &redirect_to);
+	info!("{:?}", &ask_login_request.client);
 
 	// User is already authenticated
 	if ask_login_request.skip {

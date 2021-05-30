@@ -1,4 +1,8 @@
-use crate::{auth::ConsentQueryParams, settings::ORY_HYDRA_CONFIGURATION, user::User};
+use crate::{
+	auth::ConsentQueryParams,
+	settings::{APP_SETTINGS, ORY_HYDRA_CONFIGURATION},
+	user::User,
+};
 
 use actix_web::web::Query;
 use log::{error, info};
@@ -14,6 +18,7 @@ use paperclip::actix::{
 };
 use serde_json;
 use serde_qs;
+use serde_urlencoded;
 use url::Url;
 use wither::{bson::oid::ObjectId, mongodb::Database as MongoDatabase};
 
@@ -52,9 +57,12 @@ pub async fn get_consent(oauth_request: Query<OauthConsentRequest>) -> Result<Ht
 		requested_scope: ask_consent_request.requested_scope.unwrap_or(vec![]).clone(),
 	};
 
-	let mut redirect_to: Url = Url::parse("http://localhost:3000/consent")?;
+	let mut redirect_to: Url = Url::parse(&APP_SETTINGS.server.clienturi)?;
 
+	redirect_to.set_path("/consent");
 	redirect_to.set_query(Some(&serde_qs::to_string(&query_params)?));
+
+	info!("URL Encoded: {:?}", serde_urlencoded::to_string(&query_params));
 
 	info!("{:?}", redirect_to);
 
