@@ -36,8 +36,8 @@ rand = "0.8.3"
 serde = "1.0.126"
 # JSON ser/de
 serde_json = "1.0.64"
+# QueryString ser/de
 serde_qs = "0.8.3"
-serde_urlencoded = "0.7.0"
 # Error derive
 thiserror = "1.0.25"
 # URL builder
