@@ -46,19 +46,19 @@ async fn main() -> std::io::Result<()> {
 			// Record services and routes from this line.
 			.wrap_api()
 			.service(
-				// scope("/api").service(
-				scope("/v1")
-					.service(signup)
-					.service(get_login)
-					.service(post_login)
-					.service(get_consent)
-					.service(post_consent)
-					.service(user_info)
-					.service(logout),
-				// ),
+				scope("/api").service(
+					scope("/v1")
+						.service(signup)
+						.service(get_login)
+						.service(post_login)
+						.service(get_consent)
+						.service(post_consent)
+						.service(user_info)
+						.service(logout),
+				),
 			)
 			// Mount the JSON spec at this path.
-			.with_json_spec_at("/openapi")
+			.with_json_spec_at("/api/docs")
 			// Build the app
 			.build()
 	})
