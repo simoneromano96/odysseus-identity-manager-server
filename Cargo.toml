@@ -35,7 +35,7 @@ paperclip = { git = "https://github.com/wafflespeanut/paperclip.git", rev = "20e
 # Cryptographically secure random
 rand = "0.8.3"
 # Reqwest http client
-reqwest = "0.10.10"
+reqwest = { version = "0.10.10", default-features = false, features = ["rustls-tls"] }
 # Serialize and deserialize
 serde = "1.0.126"
 # JSON ser/de
