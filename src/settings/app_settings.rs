@@ -109,10 +109,10 @@ fn init_ory_config() -> OryConfiguration {
 	// 	APP_SETTINGS.hydra.username.clone(),
 	// 	Some(APP_SETTINGS.hydra.password.clone()),
 	// ));
-	
+
 	configuration.client = client;
 
 	info!("{:?}", configuration);
-	
+
 	configuration
 }

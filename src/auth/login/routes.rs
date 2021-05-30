@@ -1,12 +1,16 @@
-use crate::{auth::Metadata, auth::{AcceptedRequest, handle_accept_login_request}, settings::APP_SETTINGS, settings::ORY_HYDRA_CONFIGURATION, user::User, utils::verify_password};
+use crate::{
+	auth::Metadata,
+	auth::{handle_accept_login_request, AcceptedRequest},
+	settings::APP_SETTINGS,
+	settings::ORY_HYDRA_CONFIGURATION,
+	user::User,
+	utils::verify_password,
+};
 
 use actix_session::Session;
 use actix_web::web::Query;
-use log::{error};
-use ory_hydra_client::{
-	apis::admin_api,
-	models::{LoginRequest},
-};
+use log::error;
+use ory_hydra_client::{apis::admin_api, models::LoginRequest};
 use paperclip::actix::{
 	api_v2_operation, get, post,
 	web::{Data, HttpResponse, Json},

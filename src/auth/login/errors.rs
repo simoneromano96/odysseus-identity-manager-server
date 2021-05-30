@@ -1,9 +1,9 @@
 use actix_web::{http::StatusCode, Error as ActixError, HttpResponse, ResponseError};
 use serde::{Deserialize, Serialize};
+use serde_json::Error as JSONError;
 use thiserror::Error;
 use url::ParseError;
 use wither::WitherError;
-use serde_json::Error as JSONError;
 
 use crate::{user::UserErrors, utils::PasswordErrors};
 
