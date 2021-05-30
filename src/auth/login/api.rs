@@ -8,7 +8,10 @@ use crate::settings::ORY_HYDRA_CONFIGURATION;
 
 use super::LoginErrors;
 
-pub async fn handle_accept_login_request(subject: &str, login_challenge: &str) -> Result<CompletedRequest, LoginErrors> {
+pub async fn handle_accept_login_request(
+	subject: &str,
+	login_challenge: &str,
+) -> Result<CompletedRequest, LoginErrors> {
 	info!("Accepting login request");
 
 	let mut body = AcceptLoginRequest::new(subject.to_string());

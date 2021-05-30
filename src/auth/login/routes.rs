@@ -1,4 +1,7 @@
-use crate::{auth::handle_accept_login_request, settings::APP_SETTINGS, settings::ORY_HYDRA_CONFIGURATION, user::User, utils::verify_password};
+use crate::{
+	auth::handle_accept_login_request, settings::APP_SETTINGS, settings::ORY_HYDRA_CONFIGURATION, user::User,
+	utils::verify_password,
+};
 
 use actix_session::Session;
 use actix_web::web::Query;

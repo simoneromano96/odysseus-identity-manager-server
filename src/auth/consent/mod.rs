@@ -1,9 +1,9 @@
 pub mod api;
+pub mod errors;
 pub mod routes;
 pub mod types;
-pub mod errors;
 
+pub use api::*;
+pub use errors::*;
 pub use routes::*;
 pub use types::*;
-pub use errors::*;
-pub use api::*;

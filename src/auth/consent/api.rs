@@ -20,8 +20,8 @@ pub async fn create_user_session(subject: &str, db: &MongoDatabase) -> Result<Co
 }
 
 pub async fn handle_accept_consent_request(
-  subject: &str,
-  db: &MongoDatabase,
+	subject: &str,
+	db: &MongoDatabase,
 	ask_consent_request: &ConsentRequest,
 	scopes: &Vec<String>,
 	consent_challenge: &str,
@@ -29,7 +29,7 @@ pub async fn handle_accept_consent_request(
 	let mut body = AcceptConsentRequest::new();
 	body.grant_access_token_audience = ask_consent_request.requested_access_token_audience.clone();
 	body.grant_scope = Some(scopes.clone());
-  let session = create_user_session(subject, db).await?;
+	let session = create_user_session(subject, db).await?;
 	body.session = Some(Box::new(session.clone()));
 	body.remember = Some(true);
 	body.remember_for = Some(0);

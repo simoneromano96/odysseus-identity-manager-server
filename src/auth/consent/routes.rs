@@ -19,7 +19,7 @@ use paperclip::actix::{
 
 use serde_qs;
 use url::Url;
-use wither::{mongodb::Database as MongoDatabase};
+use wither::mongodb::Database as MongoDatabase;
 
 use super::{ConsentErrors, OauthConsentBody, OauthConsentRequest};
 

@@ -1,10 +1,10 @@
 use actix_web::{http::StatusCode, Error as ActixError, HttpResponse, ResponseError};
 use serde::{Deserialize, Serialize};
+use serde_json::Error as JsonError;
+use serde_qs::Error as QSError;
 use thiserror::Error;
 use url::ParseError;
 use wither::WitherError;
-use serde_qs::Error as QSError;
-use serde_json::Error as JsonError;
 
 use crate::{user::UserErrors, utils::PasswordErrors};
 

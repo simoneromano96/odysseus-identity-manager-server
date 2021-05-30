@@ -6,7 +6,6 @@ pub struct OauthConsentRequest {
 	pub consent_challenge: String,
 }
 
-
 #[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
 pub struct ConsentQueryParams {
 	pub consent_challenge: String,
@@ -20,4 +19,3 @@ pub struct ConsentQueryParams {
 pub struct OauthConsentBody {
 	pub scopes: Vec<String>,
 }
-
