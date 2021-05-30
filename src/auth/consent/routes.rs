@@ -51,11 +51,11 @@ pub async fn get_consent(
 		..
 	} = ask_consent_request.clone();
 
-	let subject = subject.unwrap_or("".to_string());
+	let subject = subject.unwrap_or_default();
 	let requested_scope = requested_scope.unwrap_or_default();
 
 	let client_name = match client {
-		Some(client) => client.client_name.unwrap_or("".to_string()),
+		Some(client) => client.client_name.unwrap_or_default(),
 		None => "".to_string(),
 	};
 
