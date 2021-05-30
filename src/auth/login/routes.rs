@@ -5,7 +5,7 @@ use actix_web::web::Query;
 use log::{error, info};
 use ory_hydra_client::{
 	apis::admin_api,
-	models::{AcceptLoginRequest, CompletedRequest, LoginRequest},
+	models::{CompletedRequest, LoginRequest},
 };
 use paperclip::actix::{
 	api_v2_operation, get, post,

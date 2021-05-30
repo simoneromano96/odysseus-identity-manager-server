@@ -16,10 +16,10 @@ use paperclip::actix::{
 	api_v2_operation, get, post,
 	web::{Data, HttpResponse, Json},
 };
-use serde_json;
+
 use serde_qs;
 use url::Url;
-use wither::{bson::oid::ObjectId, mongodb::Database as MongoDatabase};
+use wither::{mongodb::Database as MongoDatabase};
 
 use super::{ConsentErrors, OauthConsentBody, OauthConsentRequest};
 
@@ -52,7 +52,7 @@ pub async fn get_consent(
 	} = ask_consent_request.clone();
 
 	let subject = subject.unwrap_or("".to_string());
-	let requested_scope = requested_scope.unwrap_or(vec![]);
+	let requested_scope = requested_scope.unwrap_or_default();
 
 	let client_name = match client {
 		Some(client) => client.client_name.unwrap_or("".to_string()),
