@@ -5,7 +5,10 @@ use ory_hydra_client::{
 };
 use wither::{bson::oid::ObjectId, mongodb::Database as MongoDatabase};
 
-use crate::{settings::ORY_HYDRA_CONFIGURATION, user::{User, UserInfo}};
+use crate::{
+	settings::ORY_HYDRA_CONFIGURATION,
+	user::{User, UserInfo},
+};
 
 use super::ConsentErrors;
 

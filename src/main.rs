@@ -22,6 +22,15 @@ async fn main() -> std::io::Result<()> {
 	let identity_database = init_database().await;
 
 	HttpServer::new(move || {
+		let cors = Cors::default()
+		.allow_any_method()
+		.allow_any_header()
+		.expose_any_header()
+		.supports_credentials()
+		.allow_any_origin()
+		.max_age(24 * 60 * 60);
+		// .allowed_origin(&APP_SETTINGS.server.clienturi)
+
 		App::new()
 			// enable logger
 			.wrap(middleware::Logger::default())
@@ -33,15 +42,7 @@ async fn main() -> std::io::Result<()> {
 					// allow the cookie only from the current domain
 					.cookie_same_site(cookie::SameSite::Lax),
 			)
-			.wrap(
-				Cors::default()
-					.allow_any_method()
-					.allow_any_header()
-					.expose_any_header()
-					.supports_credentials()
-					.max_age(24 * 60 * 60)
-					.allowed_origin(&APP_SETTINGS.server.clienturi),
-			)
+			.wrap(cors)
 			.data(identity_database.clone())
 			// Record services and routes from this line.
 			.wrap_api()
