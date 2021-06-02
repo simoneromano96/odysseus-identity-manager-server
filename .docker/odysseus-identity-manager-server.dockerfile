@@ -1,5 +1,8 @@
 FROM rustlang/rust@sha256:ad43faa521e7982d7786b43f7afd1bd469dbaf9d9c9148ec18417cb34b0d21b3 as builder
 
+# Enable cpu native optimizations
+ENV RUSTFLAGS="-C target-cpu=native"
+
 WORKDIR /usr/src/odysseus-identity-manager
 
 COPY . .

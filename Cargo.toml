@@ -48,3 +48,11 @@ thiserror = "1.0.25"
 url = "2.2.2"
 # MongoDB ODM
 wither = "0.9.0"
+
+[profile.release]
+# Link-time Optimization
+lto = true
+# Codegen Optimization
+codegen-units = 1
+# Abort on panic
+panic = "abort"
