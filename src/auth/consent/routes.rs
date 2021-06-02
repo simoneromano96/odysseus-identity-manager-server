@@ -5,7 +5,7 @@ use crate::{
 };
 
 use actix_web::web::Query;
-use log::{error, info};
+use log::{error};
 use ory_hydra_client::{
 	apis::admin_api,
 	models::{
