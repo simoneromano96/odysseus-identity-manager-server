@@ -23,12 +23,12 @@ async fn main() -> std::io::Result<()> {
 
 	HttpServer::new(move || {
 		let cors = Cors::default()
-		.allow_any_method()
-		.allow_any_header()
-		.expose_any_header()
-		.supports_credentials()
-		.allow_any_origin()
-		.max_age(24 * 60 * 60);
+			.allow_any_method()
+			.allow_any_header()
+			.expose_any_header()
+			.supports_credentials()
+			.allow_any_origin()
+			.max_age(24 * 60 * 60);
 		// .allowed_origin(&APP_SETTINGS.server.clienturi)
 
 		App::new()
