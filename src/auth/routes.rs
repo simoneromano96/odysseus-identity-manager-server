@@ -6,9 +6,7 @@ use crate::{
 };
 
 use actix_session::Session;
-
 use log::info;
-
 use paperclip::actix::{
 	api_v2_operation, get, post,
 	web::{Data, Json},

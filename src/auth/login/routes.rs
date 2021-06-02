@@ -9,7 +9,7 @@ use crate::{
 
 use actix_session::Session;
 use actix_web::web::Query;
-use log::error;
+use log::{error, info};
 use ory_hydra_client::{apis::admin_api, models::LoginRequest};
 use paperclip::actix::{
 	api_v2_operation, get, post,
@@ -39,6 +39,8 @@ pub async fn get_login(oauth_request: Query<OauthLoginRequest>) -> Result<HttpRe
 
 	redirect_to.join("/login")?;
 	redirect_to.set_query(Some(&format!("login_challenge={}", ask_login_request.challenge)));
+
+	info!("{:?}", &redirect_to);
 
 	// User is already authenticated
 	if ask_login_request.skip {
@@ -91,6 +93,8 @@ pub async fn post_login(
 
 	let subject = user.id.clone().unwrap().to_string();
 	let accept_login_request = handle_accept_login_request(&subject, &login_challenge).await?;
+
+	info!("{:?}", &accept_login_request);
 
 	Ok(Json(accept_login_request.into()))
 }

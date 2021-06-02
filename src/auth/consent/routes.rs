@@ -5,7 +5,7 @@ use crate::{
 };
 
 use actix_web::web::Query;
-use log::error;
+use log::{error, info};
 use ory_hydra_client::{
 	apis::admin_api,
 	models::{
@@ -16,7 +16,6 @@ use paperclip::actix::{
 	api_v2_operation, get, post,
 	web::{Data, HttpResponse, Json},
 };
-
 use serde_qs;
 use url::Url;
 use wither::mongodb::Database as MongoDatabase;
@@ -68,6 +67,8 @@ pub async fn get_consent(
 
 	redirect_to.join("/consent")?;
 	redirect_to.set_query(Some(&serde_qs::to_string(&query_params)?));
+
+	info!("{:?}", &redirect_to);
 
 	let metadata = match client {
 		Some(client) => {
@@ -129,6 +130,8 @@ pub async fn post_consent(
 
 	let accept_consent_request =
 		handle_accept_consent_request(subject, &db, &ask_consent_request, &data.scopes, &consent_challenge).await?;
+
+	info!("{:?}", &accept_consent_request);
 
 	Ok(Json(accept_consent_request.into()))
 }
