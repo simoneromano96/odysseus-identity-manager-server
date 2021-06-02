@@ -66,7 +66,7 @@ pub async fn get_consent(
 
 	let mut redirect_to: Url = Url::parse(&APP_SETTINGS.server.clienturi)?;
 
-	redirect_to.set_path("/consent");
+	redirect_to.join("/consent")?;
 	redirect_to.set_query(Some(&serde_qs::to_string(&query_params)?));
 
 	let metadata = match client {

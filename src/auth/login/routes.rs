@@ -35,9 +35,9 @@ pub async fn get_login(oauth_request: Query<OauthLoginRequest>) -> Result<HttpRe
 			LoginErrors::HydraError
 		})?;
 
-	let mut redirect_to = Url::parse(&APP_SETTINGS.server.clienturi)?;
+	let mut redirect_to: Url = Url::parse(&APP_SETTINGS.server.clienturi)?;
 
-	redirect_to.set_path("/login");
+	redirect_to.join("/login")?;
 	redirect_to.set_query(Some(&format!("login_challenge={}", ask_login_request.challenge)));
 
 	// User is already authenticated
