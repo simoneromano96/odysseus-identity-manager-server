@@ -10,7 +10,6 @@ use serde::{Deserialize, Serialize};
 use super::{HydraSettings, LoggerSettings, MongoSettings, ServerSettings};
 
 pub static APP_SETTINGS: Lazy<Settings> = Lazy::new(Settings::init_config);
-
 pub static ORY_HYDRA_CONFIGURATION: Lazy<OryConfiguration> = Lazy::new(init_ory_config);
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -73,7 +72,7 @@ impl Settings {
 		// Deserialize configuration
 		let r: Settings = s.try_into().expect("Configuration error");
 
-		info!("{:?}", r);
+		info!("APP CONFIGURATION: {:?}", r);
 
 		r
 	}
@@ -99,24 +98,20 @@ fn init_ory_config() -> OryConfiguration {
 		header::HeaderValue::from_str(&basic_auth).expect("Could not create basic authorization header"),
 	);
 
-	info!("{:?}", &headers);
-
 	let client = reqwest::Client::builder()
 		.default_headers(headers)
 		.build()
 		.expect("Could not create client");
 
-	info!("{:?}", &client);
-
 	// This does not work...
-	configuration.basic_auth = Some((
-		APP_SETTINGS.hydra.username.clone(),
-		Some(APP_SETTINGS.hydra.password.clone()),
-	));
+	// configuration.basic_auth = Some((
+	// 	APP_SETTINGS.hydra.username.clone(),
+	// 	Some(APP_SETTINGS.hydra.password.clone()),
+	// ));
 
 	configuration.client = client;
 
-	info!("{:?}", configuration);
+	info!("ORY CONFIGURATION: {:?}", configuration);
 
 	configuration
 }

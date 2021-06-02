@@ -63,12 +63,12 @@ pub async fn get_consent(
 		requested_scope: requested_scope.clone(),
 	};
 
-	let mut redirect_to: Url = Url::parse(&APP_SETTINGS.server.clienturi)?;
+	let client_uri = Url::parse(&APP_SETTINGS.server.clienturi)?;
 
-	redirect_to.join("consent")?;
+	let mut redirect_to = client_uri.join("consent")?;
 	redirect_to.set_query(Some(&serde_qs::to_string(&query_params)?));
 
-	info!("{:?}", &redirect_to);
+	// info!("{:?}", &redirect_to);
 
 	let metadata = match client {
 		Some(client) => {
@@ -131,7 +131,7 @@ pub async fn post_consent(
 	let accept_consent_request =
 		handle_accept_consent_request(subject, &db, &ask_consent_request, &data.scopes, &consent_challenge).await?;
 
-	info!("{:?}", &accept_consent_request);
+	// info!("{:?}", &accept_consent_request);
 
 	Ok(Json(accept_consent_request.into()))
 }

@@ -1,4 +1,4 @@
-use log::error;
+use log::{error, info};
 use ory_hydra_client::{
 	apis::admin_api,
 	models::{AcceptConsentRequest, CompletedRequest, ConsentRequest, ConsentRequestSession},
@@ -13,6 +13,7 @@ use crate::{
 use super::ConsentErrors;
 
 pub async fn create_user_session(subject: &str, db: &MongoDatabase) -> Result<ConsentRequestSession, ConsentErrors> {
+	info!("Creating user session");
 	let id = ObjectId::with_string(subject).unwrap();
 	let user = User::find_by_id(db, &id).await?.ok_or(ConsentErrors::UserNotFound)?;
 	let user_info: UserInfo = user.into();
@@ -30,6 +31,7 @@ pub async fn handle_accept_consent_request(
 	scopes: &[String],
 	consent_challenge: &str,
 ) -> Result<CompletedRequest, ConsentErrors> {
+	info!("Handling accept_consent_request");
 	let mut body = AcceptConsentRequest::new();
 	body.grant_access_token_audience = ask_consent_request.requested_access_token_audience.clone();
 	body.grant_scope = Some(scopes.to_vec());
