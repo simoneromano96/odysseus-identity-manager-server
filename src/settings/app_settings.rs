@@ -99,16 +99,20 @@ fn init_ory_config() -> OryConfiguration {
 		header::HeaderValue::from_str(&basic_auth).expect("Could not create basic authorization header"),
 	);
 
+	info!("{:?}", &headers);
+
 	let client = reqwest::Client::builder()
 		.default_headers(headers)
 		.build()
 		.expect("Could not create client");
 
+	info!("{:?}", &client);
+
 	// This does not work...
-	// configuration.basic_auth = Some((
-	// 	APP_SETTINGS.hydra.username.clone(),
-	// 	Some(APP_SETTINGS.hydra.password.clone()),
-	// ));
+	configuration.basic_auth = Some((
+		APP_SETTINGS.hydra.username.clone(),
+		Some(APP_SETTINGS.hydra.password.clone()),
+	));
 
 	configuration.client = client;
 
