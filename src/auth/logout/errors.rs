@@ -1,5 +1,6 @@
 use actix_web::{http::StatusCode, Error as ActixError, HttpResponse, ResponseError};
 use serde::{Deserialize, Serialize};
+use serde_json::Error as JSONError;
 use thiserror::Error;
 use url::ParseError;
 use wither::WitherError;
@@ -12,7 +13,7 @@ struct ErrorResponse {
 }
 
 #[derive(Error, Debug)]
-pub enum AuthErrors {
+pub enum LogoutErrors {
 	#[error("Internal server error")]
 	ActixError(#[from] ActixError),
 	#[error("Internal server error")]
@@ -21,11 +22,15 @@ pub enum AuthErrors {
 	UserCreationError(#[from] UserErrors),
 	#[error("Password Error: {0}")]
 	PasswordError(#[from] PasswordErrors),
+	#[error("Ory hydra error")]
+	HydraError,
 	#[error("Invalid URL: {0}")]
 	InvalidUrl(#[from] ParseError),
+	#[error("Internal server error: {0}")]
+	JSONParseError(#[from] JSONError),
 }
 
-impl ResponseError for AuthErrors {
+impl ResponseError for LogoutErrors {
 	fn error_response(&self) -> HttpResponse {
 		let error_response = ErrorResponse {
 			error: self.to_string(),

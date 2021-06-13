@@ -1,15 +1,12 @@
 use crate::{
-	auth::Metadata,
 	auth::{handle_accept_login_request, AcceptedRequest},
 	settings::APP_SETTINGS,
 	settings::ORY_HYDRA_CONFIGURATION,
 	user::User,
-	utils::verify_password,
 };
 
-use actix_session::Session;
 use actix_web::web::Query;
-use log::{error};
+use log::error;
 use ory_hydra_client::{apis::admin_api, models::LoginRequest};
 use paperclip::actix::{
 	api_v2_operation, get, post,
@@ -64,37 +61,17 @@ pub async fn get_login(oauth_request: Query<OauthLoginRequest>) -> Result<HttpRe
 pub async fn post_login(
 	login_input: Json<LoginInput>,
 	oauth_request: Query<OauthLoginRequest>,
-	session: Session,
 	db: Data<MongoDatabase>,
 ) -> Result<Json<AcceptedRequest>, LoginErrors> {
 	let login_challenge = oauth_request.into_inner().login_challenge;
 
-	let user = match session.get("user_id")? {
-		Some(user_id) => {
-			// We can be sure that the user exists if there is a session, unless the cookie has been revoked
-			let user = User::find_by_id(&db, &user_id)
-				.await?
-				.ok_or(LoginErrors::InvalidCookie)?;
-			// Renew the session
-			session.renew();
+	let user = User::login(&db, &login_input.username, &login_input.password).await?;
 
-			user
-		}
-		None => {
-			// Find the user
-			let user = User::login(&db, &login_input.username, &login_input.password).await?;
-
-			// Create a session for the user
-			session.set("user_id", user.id.clone().unwrap())?;
-
-			user
-		}
-	};
-
+	// Safe to unwrap since the user exists
 	let subject = user.id.clone().unwrap().to_string();
-	let accept_login_request = handle_accept_login_request(&subject, &login_challenge).await?;
 
-	// info!("{:?}", &accept_login_request);
+	// Accept login request
+	let accept_login_request = handle_accept_login_request(&subject, &login_challenge).await?;
 
 	Ok(Json(accept_login_request.into()))
 }

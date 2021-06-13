@@ -1,17 +1,11 @@
 use crate::{
-	auth::{create_user_session, handle_accept_consent_request, AcceptedRequest, ConsentQueryParams, Metadata},
+	auth::{handle_accept_consent_request, AcceptedRequest, ConsentQueryParams, Metadata},
 	settings::{APP_SETTINGS, ORY_HYDRA_CONFIGURATION},
-	user::User,
 };
 
 use actix_web::web::Query;
-use log::{error};
-use ory_hydra_client::{
-	apis::admin_api,
-	models::{
-		AcceptConsentRequest, AcceptLoginRequest, CompletedRequest, ConsentRequest, ConsentRequestSession, LoginRequest,
-	},
-};
+use log::error;
+use ory_hydra_client::{apis::admin_api, models::ConsentRequest};
 use paperclip::actix::{
 	api_v2_operation, get, post,
 	web::{Data, HttpResponse, Json},
@@ -115,13 +109,12 @@ pub async fn post_consent(
 ) -> Result<Json<AcceptedRequest>, ConsentErrors> {
 	let consent_challenge = oauth_request.into_inner().consent_challenge;
 
-	let ask_consent_request: ConsentRequest =
-		admin_api::get_consent_request(&ORY_HYDRA_CONFIGURATION, &consent_challenge)
-			.await
-			.map_err(|e| {
-				error!("{:?}", e);
-				ConsentErrors::HydraError
-			})?;
+	let ask_consent_request = admin_api::get_consent_request(&ORY_HYDRA_CONFIGURATION, &consent_challenge)
+		.await
+		.map_err(|e| {
+			error!("{:?}", e);
+			ConsentErrors::HydraError
+		})?;
 
 	let subject = ask_consent_request
 		.subject

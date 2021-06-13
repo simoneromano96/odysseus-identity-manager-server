@@ -22,14 +22,8 @@ pub enum LoginErrors {
 	UserCreationError(#[from] UserErrors),
 	#[error("Password Error: {0}")]
 	PasswordError(#[from] PasswordErrors),
-	#[error("Invalid cookie")]
-	InvalidCookie,
-	#[error("User not found")]
-	UserNotFound,
 	#[error("Ory hydra error")]
 	HydraError,
-	#[error("Missing login challenge parameter")]
-	MissingLoginChallenge,
 	#[error("Invalid URL: {0}")]
 	InvalidUrl(#[from] ParseError),
 	#[error("Internal server error: {0}")]
@@ -47,10 +41,7 @@ impl ResponseError for LoginErrors {
 	fn status_code(&self) -> StatusCode {
 		match self {
 			Self::UserCreationError(UserErrors::DatabaseError(_)) => StatusCode::BAD_REQUEST,
-			Self::InvalidCookie => StatusCode::FORBIDDEN,
-			Self::UserNotFound => StatusCode::NOT_FOUND,
 			Self::PasswordError(_) => StatusCode::BAD_REQUEST,
-			Self::MissingLoginChallenge => StatusCode::BAD_REQUEST,
 			_ => StatusCode::INTERNAL_SERVER_ERROR,
 		}
 	}

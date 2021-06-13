@@ -31,8 +31,6 @@ pub enum ConsentErrors {
 	UserMalformed(#[from] JsonError),
 	#[error("Ory hydra error")]
 	HydraError,
-	#[error("Missing login challenge parameter")]
-	MissingLoginChallenge,
 	#[error("Invalid URL: {0}")]
 	InvalidUrl(#[from] ParseError),
 	#[error("Invalid Query Parameters: {0}")]
@@ -53,7 +51,6 @@ impl ResponseError for ConsentErrors {
 			Self::InvalidCookie => StatusCode::FORBIDDEN,
 			Self::UserNotFound => StatusCode::NOT_FOUND,
 			Self::PasswordError(_) => StatusCode::BAD_REQUEST,
-			Self::MissingLoginChallenge => StatusCode::BAD_REQUEST,
 			_ => StatusCode::INTERNAL_SERVER_ERROR,
 		}
 	}

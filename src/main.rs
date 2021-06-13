@@ -4,7 +4,7 @@ use actix_web::{self, cookie, middleware, App, HttpServer};
 use paperclip::actix::{web::scope, OpenApiExt};
 
 use crate::{
-	auth::{get_consent, get_login, logout, post_consent, post_login, signup, user_info},
+	auth::{get_consent, get_login, get_logout, post_consent, post_login, post_logout, signup},
 	settings::APP_SETTINGS,
 	utils::{init_database, init_logger},
 };
@@ -54,8 +54,8 @@ async fn main() -> std::io::Result<()> {
 						.service(post_login)
 						.service(get_consent)
 						.service(post_consent)
-						.service(user_info)
-						.service(logout),
+						.service(get_logout)
+						.service(post_logout),
 				),
 			)
 			// Mount the JSON spec at this path.
