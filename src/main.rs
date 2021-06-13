@@ -3,11 +3,7 @@ use actix_redis::RedisSession;
 use actix_web::{self, cookie, middleware, App, HttpServer};
 use paperclip::actix::{web::scope, OpenApiExt};
 
-use crate::{
-	auth::{get_consent, get_login, get_logout, post_consent, post_login, post_logout, signup},
-	settings::APP_SETTINGS,
-	utils::{init_database, init_logger},
-};
+use crate::{auth::init_routes, settings::{APP_SETTINGS, MONGO}, utils::{init_database, init_logger}};
 
 mod auth;
 mod settings;
@@ -20,6 +16,8 @@ async fn main() -> std::io::Result<()> {
 
 	// Connect & sync indexes.
 	let identity_database = init_database().await;
+
+	MONGO.set(identity_database);
 
 	HttpServer::new(move || {
 		let cors = Cors::default()
@@ -46,18 +44,17 @@ async fn main() -> std::io::Result<()> {
 			.data(identity_database.clone())
 			// Record services and routes from this line.
 			.wrap_api()
-			.service(
-				scope("/api").service(
+			.service(scope("/api").service(
 					scope("/v1")
-						.service(signup)
-						.service(get_login)
-						.service(post_login)
-						.service(get_consent)
-						.service(post_consent)
-						.service(get_logout)
-						.service(post_logout),
-				),
-			)
+						.configure(init_routes)
+						// .service(signup)
+						// .service(get_login)
+						// .service(post_login)
+						// .service(get_consent)
+						// .service(post_consent)
+						// .service(get_logout)
+						// .service(post_logout),
+				))
 			// Mount the JSON spec at this path.
 			.with_json_spec_at("/api/docs")
 			// Build the app
