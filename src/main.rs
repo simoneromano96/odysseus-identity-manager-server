@@ -3,7 +3,7 @@ use actix_redis::RedisSession;
 use actix_web::{self, cookie, middleware, App, HttpServer};
 use paperclip::actix::{web::scope, OpenApiExt};
 
-use crate::{auth::init_routes, settings::{APP_SETTINGS, MONGO}, utils::{init_database, init_logger}};
+use crate::{auth::init_routes, settings::{APP_SETTINGS}, utils::{init_database, init_logger}};
 
 mod auth;
 mod settings;
@@ -16,8 +16,6 @@ async fn main() -> std::io::Result<()> {
 
 	// Connect & sync indexes.
 	let identity_database = init_database().await;
-
-	MONGO.set(identity_database);
 
 	HttpServer::new(move || {
 		let cors = Cors::default()
