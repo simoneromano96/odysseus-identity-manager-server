@@ -50,18 +50,6 @@ pub async fn get_consent(
 		None => "".to_string(),
 	};
 
-	let query_params = ConsentQueryParams {
-		consent_challenge: challenge,
-		client_name,
-		subject: subject.clone(),
-		requested_scope: requested_scope.clone(),
-	};
-
-	let client_uri = Url::parse(&APP_SETTINGS.server.clienturi)?;
-
-	let mut redirect_to = client_uri.join("consent")?;
-	redirect_to.set_query(Some(&serde_qs::to_string(&query_params)?));
-
 	// info!("{:?}", &redirect_to);
 
 	let metadata = match client {
@@ -75,6 +63,8 @@ pub async fn get_consent(
 		None => Metadata::default(),
 	};
 
+	let mut redirect_to;
+
 	// If the oauth client is trusted or the User has already given consent, accept the consent
 	if metadata.is_trusted || ask_consent_request.skip.unwrap_or(false) {
 		let accept_consent_request = handle_accept_consent_request(
@@ -87,6 +77,17 @@ pub async fn get_consent(
 		.await?;
 
 		redirect_to = Url::parse(&accept_consent_request.redirect_to)?;
+	} else {
+		let client_uri = Url::parse(&APP_SETTINGS.server.clienturi)?;
+		redirect_to = client_uri.join("consent")?;
+	
+		let query_params = ConsentQueryParams {
+			consent_challenge: challenge,
+			client_name,
+			subject: subject.clone(),
+			requested_scope: requested_scope.clone(),
+		};
+		redirect_to.set_query(Some(&serde_qs::to_string(&query_params)?));
 	}
 
 	Ok(
