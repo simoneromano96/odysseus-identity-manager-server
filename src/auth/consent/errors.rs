@@ -1,4 +1,5 @@
 use actix_web::{http::StatusCode, Error as ActixError, HttpResponse, ResponseError};
+use paperclip::actix::api_v2_errors;
 use serde::{Deserialize, Serialize};
 use serde_json::Error as JsonError;
 use serde_qs::Error as QSError;
@@ -6,25 +7,21 @@ use thiserror::Error;
 use url::ParseError;
 use wither::WitherError;
 
-use crate::{user::UserErrors, utils::PasswordErrors};
-
 #[derive(Debug, Deserialize, Serialize)]
 struct ErrorResponse {
 	error: String,
 }
 
+#[api_v2_errors(
+	code = 404, description = "Could not find user",
+	code = 500, description = "There has been an error while validating this request, please try again",
+)]
 #[derive(Error, Debug)]
 pub enum ConsentErrors {
 	#[error("Internal server error")]
 	ActixError(#[from] ActixError),
 	#[error("Internal server error")]
 	DatabaseError(#[from] WitherError),
-	#[error("Could not create user")]
-	UserCreationError(#[from] UserErrors),
-	#[error("Password Error: {0}")]
-	PasswordError(#[from] PasswordErrors),
-	#[error("Invalid cookie")]
-	InvalidCookie,
 	#[error("User not found")]
 	UserNotFound,
 	#[error("User is malformed: {0}")]
@@ -47,10 +44,7 @@ impl ResponseError for ConsentErrors {
 
 	fn status_code(&self) -> StatusCode {
 		match self {
-			Self::UserCreationError(UserErrors::DatabaseError(_)) => StatusCode::BAD_REQUEST,
-			Self::InvalidCookie => StatusCode::FORBIDDEN,
 			Self::UserNotFound => StatusCode::NOT_FOUND,
-			Self::PasswordError(_) => StatusCode::BAD_REQUEST,
 			_ => StatusCode::INTERNAL_SERVER_ERROR,
 		}
 	}

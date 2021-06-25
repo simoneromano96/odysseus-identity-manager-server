@@ -29,4 +29,4 @@ services:
     ports:
       - 8082:8080
     environment:
-      SWAGGER_JSON_URL: http://localhost:8080/openapi
+      SWAGGER_JSON_URL: http://localhost:8000/openapi/docs

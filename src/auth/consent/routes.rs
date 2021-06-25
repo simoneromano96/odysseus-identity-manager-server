@@ -16,7 +16,7 @@ use wither::mongodb::Database as MongoDatabase;
 
 use super::{ConsentErrors, OauthConsentBody, OauthConsentRequest};
 
-/// User login
+/// User consent
 ///
 /// Starts the consent flow, responds with a redirect
 #[api_v2_operation]
@@ -25,9 +25,7 @@ pub async fn get_consent(
 	oauth_request: Query<OauthConsentRequest>,
 	db: Data<MongoDatabase>,
 ) -> Result<HttpResponse, ConsentErrors> {
-	let consent_challenge = oauth_request.into_inner().consent_challenge;
-
-	let ask_consent_request = admin_api::get_consent_request(&ORY_HYDRA_CONFIGURATION, &consent_challenge)
+	let ask_consent_request = admin_api::get_consent_request(&ORY_HYDRA_CONFIGURATION, &oauth_request.consent_challenge)
 		.await
 		.map_err(|e| {
 			error!("{:?}", e);
@@ -72,7 +70,7 @@ pub async fn get_consent(
 			&db,
 			&ask_consent_request,
 			&requested_scope,
-			&consent_challenge,
+			&oauth_request.consent_challenge,
 		)
 		.await?;
 
@@ -80,7 +78,7 @@ pub async fn get_consent(
 	} else {
 		let client_uri = Url::parse(&APP_SETTINGS.server.clienturi)?;
 		redirect_to = client_uri.join("consent")?;
-	
+
 		let query_params = ConsentQueryParams {
 			consent_challenge: challenge,
 			client_name,
@@ -120,7 +118,7 @@ pub async fn post_consent(
 	let subject = ask_consent_request
 		.subject
 		.as_ref()
-		.ok_or(ConsentErrors::InvalidCookie)?;
+		.ok_or(ConsentErrors::UserNotFound)?;
 
 	let accept_consent_request =
 		handle_accept_consent_request(subject, &db, &ask_consent_request, &data.scopes, &consent_challenge).await?;
