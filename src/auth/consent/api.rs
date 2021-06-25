@@ -40,7 +40,7 @@ pub async fn handle_accept_consent_request(
 	body.remember = Some(true);
 	body.remember_for = Some(0);
 	let accept_consent_request =
-		admin_api::accept_consent_request(&ORY_HYDRA_CONFIGURATION, &consent_challenge, Some(body))
+		admin_api::accept_consent_request(&ORY_HYDRA_CONFIGURATION, consent_challenge, Some(body))
 			.await
 			.map_err(|e| {
 				error!("{:?}", e);

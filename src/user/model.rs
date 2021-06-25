@@ -44,21 +44,21 @@ impl User {
 
 	pub async fn login(db: &Database, username: &str, password: &str) -> Result<Self, UserErrors> {
 		// Find the user
-		let user = Self::find_by_username(&db, &username)
+		let user = Self::find_by_username(db, username)
 			.await?
 			.ok_or(UserErrors::UserNotFound)?;
 
 		// Verify the password
-		verify_password(&user.password, &password)?;
+		verify_password(&user.password, password)?;
 
 		Ok(user)
 	}
 
 	pub async fn find_by_id(db: &Database, id: &ObjectId) -> Result<Option<Self>, WitherError> {
-		User::find_one(&db, doc! { "_id": id }, None).await
+		User::find_one(db, doc! { "_id": id }, None).await
 	}
 
 	pub async fn find_by_username(db: &Database, username: &str) -> Result<Option<Self>, WitherError> {
-		User::find_one(&db, doc! { "username": username }, None).await
+		User::find_one(db, doc! { "username": username }, None).await
 	}
 }
