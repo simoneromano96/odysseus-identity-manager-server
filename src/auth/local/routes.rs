@@ -4,7 +4,7 @@ use crate::{
 	user::{CreateUserInput, User, UserErrors, UserInfo},
 };
 
-use lettre::{smtp::authentication::Credentials, SmtpClient, SmtpTransport, Transport};
+use lettre::{SmtpTransport, Transport};
 use lettre_email::EmailBuilder;
 use paperclip::actix::{
 	api_v2_operation, post,
@@ -40,7 +40,7 @@ pub async fn signup(
 				.unwrap();
 			let mut mailer = SmtpTransport::new(SMTP_CLIENT.clone());
 			// Send the email
-			let result = mailer.send(email.into()).unwrap();
+			let _result = mailer.send(email.into()).unwrap();
 
 			Ok(Json(user.into()))
 		}
