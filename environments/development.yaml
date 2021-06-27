@@ -32,3 +32,15 @@ redis:
 session:
   # Encryption secret
   secret: N7WoK3mG7lSb0CpK8UhAabUZNi27n5ub
+# Template
+template:
+  # The base path to the template directory
+  path: /path/to/templates
+# SMTP connection details
+smtp:
+  # The SMTP server domain
+  domain: mail.yourdomain.com
+  # The mail account username
+  username: system@yourdomain.com
+  # The mail account password
+  password: systempassword
