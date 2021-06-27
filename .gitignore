@@ -15,3 +15,5 @@ Cargo.lock
 
 # Application logs
 logs/
+
+environments/*.local.*
