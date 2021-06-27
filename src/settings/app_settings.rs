@@ -1,16 +1,23 @@
-use std::env;
+use std::{env, path::PathBuf};
 
 use config::{Config, Environment, File};
+use handlebars::Handlebars;
+use lettre::{
+	smtp::{authentication::Credentials, ConnectionReuseParameters},
+	SmtpClient,
+};
 use log::info;
 use once_cell::sync::Lazy;
 use ory_hydra_client::apis::configuration::Configuration as OryConfiguration;
 // use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
-use super::{HydraSettings, LoggerSettings, MongoSettings, ServerSettings};
+use super::{HydraSettings, LoggerSettings, MongoSettings, ServerSettings, SMTPSettings};
 
 pub static APP_SETTINGS: Lazy<Settings> = Lazy::new(Settings::init_config);
 pub static ORY_HYDRA_CONFIGURATION: Lazy<OryConfiguration> = Lazy::new(init_ory_config);
+pub static HANDLEBARS: Lazy<Handlebars> = Lazy::new(init_handlebars);
+pub static SMTP_CLIENT: Lazy<SmtpClient> = Lazy::new(init_smtp);
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -24,6 +31,12 @@ pub struct RedisSettings {
 pub struct SessionSettings {
 	/// Encryption secret
 	pub secret: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TemplateSettings {
+	/// The base path to the template directory
+	pub path: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -41,6 +54,10 @@ pub struct Settings {
 	pub server: ServerSettings,
 	/// Session configuration
 	pub session: SessionSettings,
+	/// Template directory
+	pub template: TemplateSettings,
+	/// SMTP configuration
+	pub smtp: SMTPSettings,
 }
 
 impl Settings {
@@ -114,4 +131,26 @@ fn init_ory_config() -> OryConfiguration {
 	info!("ORY CONFIGURATION: {:?}", configuration);
 
 	configuration
+}
+
+fn init_handlebars() -> Handlebars<'static> {
+	let mut base_path: PathBuf = PathBuf::new();
+	base_path.push(&APP_SETTINGS.template.path);
+	let signup_path = base_path.join("signup.hbs");
+	// create the handlebars registry
+	let mut handlebars = handlebars::Handlebars::new();
+	// register template from a file and assign a name to it
+	handlebars
+		.register_template_file("signup", signup_path)
+		.expect("Could not register `signup` template!");
+
+	handlebars
+}
+
+fn init_smtp() -> SmtpClient {
+	SmtpClient::new_simple("mail.simoneromano.eu")
+		.unwrap()
+		.credentials(Credentials::new("me@simoneromano.eu".into(), "djWfbMom".into()))
+		.smtp_utf8(true)
+		.connection_reuse(ConnectionReuseParameters::ReuseUnlimited)
 }

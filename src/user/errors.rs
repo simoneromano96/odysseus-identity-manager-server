@@ -1,5 +1,6 @@
 use thiserror::Error;
 use wither::WitherError;
+use validator::ValidationErrors;
 
 use crate::utils::PasswordErrors;
 
@@ -12,4 +13,8 @@ pub enum UserErrors {
 	HashError(#[from] PasswordErrors),
 	#[error("User not found")]
 	UserNotFound,
+	// #[error("Validation error")]
+	// ValidationError,
+	#[error("{0}")]
+	ValidationError(#[from] ValidationErrors)
 }

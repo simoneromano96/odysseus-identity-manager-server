@@ -17,7 +17,7 @@ pub enum AuthErrors {
 	ActixError(#[from] ActixError),
 	#[error("Internal server error")]
 	DatabaseError(#[from] WitherError),
-	#[error("Could not create user")]
+	#[error("Could not create user: {0}")]
 	UserCreationError(#[from] UserErrors),
 	#[error("Password Error: {0}")]
 	PasswordError(#[from] PasswordErrors),
@@ -36,6 +36,7 @@ impl ResponseError for AuthErrors {
 	fn status_code(&self) -> StatusCode {
 		match self {
 			Self::UserCreationError(UserErrors::DatabaseError(_)) => StatusCode::BAD_REQUEST,
+			Self::UserCreationError(UserErrors::ValidationError(_)) => StatusCode::BAD_REQUEST,
 			Self::PasswordError(_) => StatusCode::BAD_REQUEST,
 			_ => StatusCode::INTERNAL_SERVER_ERROR,
 		}

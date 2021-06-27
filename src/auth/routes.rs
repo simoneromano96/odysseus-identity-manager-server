@@ -1,4 +1,4 @@
-use paperclip::actix::web::{scope, ServiceConfig};
+use paperclip::actix::web::ServiceConfig;
 
 use super::{get_consent, get_login, get_logout, post_consent, post_login, post_logout, signup};
 
