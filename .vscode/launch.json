@@ -1,0 +1,49 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'odysseus-identity-manager'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=odysseus-identity-manager",
+          "--package=odysseus-identity-manager"
+        ],
+        "filter": {
+          "name": "odysseus-identity-manager",
+          "kind": "bin"
+        }
+      },
+      "env": {
+        "LOCAL": "true",
+        "RUN_MODE": "development",
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'odysseus-identity-manager'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=odysseus-identity-manager",
+          "--package=odysseus-identity-manager"
+        ],
+        "filter": {
+          "name": "odysseus-identity-manager",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}
