@@ -6,10 +6,13 @@ use lettre::{
 	smtp::{authentication::Credentials, ConnectionReuseParameters},
 	SmtpClient,
 };
+use libreauth::{
+	hash::HashFunction::Sha3_512,
+	oath::{TOTPBuilder, TOTP},
+};
 use log::info;
 use once_cell::sync::Lazy;
 use ory_hydra_client::apis::configuration::Configuration as OryConfiguration;
-// use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
 use super::{HydraSettings, LoggerSettings, MongoSettings, SMTPSettings, ServerSettings};
@@ -18,6 +21,7 @@ pub static APP_SETTINGS: Lazy<Settings> = Lazy::new(Settings::init_config);
 pub static ORY_HYDRA_CONFIGURATION: Lazy<OryConfiguration> = Lazy::new(init_ory_config);
 pub static HANDLEBARS: Lazy<Handlebars> = Lazy::new(init_handlebars);
 pub static SMTP_CLIENT: Lazy<SmtpClient> = Lazy::new(init_smtp);
+pub static TOTP_GENERATOR: Lazy<TOTP> = Lazy::new(init_totp);
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -158,7 +162,7 @@ fn init_handlebars() -> Handlebars<'static> {
 	handlebars
 		.register_template_file("signup", signup_path)
 		.expect("Could not register `signup` template!");
-	
+
 	info!("Registered successfully all templates!");
 
 	handlebars
@@ -173,4 +177,13 @@ fn init_smtp() -> SmtpClient {
 		))
 		.smtp_utf8(true)
 		.connection_reuse(ConnectionReuseParameters::ReuseUnlimited)
+}
+
+fn init_totp() -> TOTP {
+	TOTPBuilder::new()
+		.ascii_key("test")
+		.hash_function(Sha3_512)
+		.period(10)
+		.finalize()
+		.expect("Could not initialize totp generator")
 }
