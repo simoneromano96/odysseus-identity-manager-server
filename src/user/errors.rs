@@ -1,6 +1,6 @@
 use thiserror::Error;
-use wither::WitherError;
 use validator::ValidationErrors;
+use wither::WitherError;
 
 use crate::utils::PasswordErrors;
 
@@ -16,5 +16,5 @@ pub enum UserErrors {
 	// #[error("Validation error")]
 	// ValidationError,
 	#[error("{0}")]
-	ValidationError(#[from] ValidationErrors)
+	ValidationError(#[from] ValidationErrors),
 }

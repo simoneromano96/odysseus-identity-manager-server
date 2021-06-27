@@ -12,7 +12,7 @@ use ory_hydra_client::apis::configuration::Configuration as OryConfiguration;
 // use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
-use super::{HydraSettings, LoggerSettings, MongoSettings, ServerSettings, SMTPSettings};
+use super::{HydraSettings, LoggerSettings, MongoSettings, SMTPSettings, ServerSettings};
 
 pub static APP_SETTINGS: Lazy<Settings> = Lazy::new(Settings::init_config);
 pub static ORY_HYDRA_CONFIGURATION: Lazy<OryConfiguration> = Lazy::new(init_ory_config);
@@ -148,9 +148,12 @@ fn init_handlebars() -> Handlebars<'static> {
 }
 
 fn init_smtp() -> SmtpClient {
-	SmtpClient::new_simple("mail.simoneromano.eu")
+	SmtpClient::new_simple(&APP_SETTINGS.smtp.domain)
 		.unwrap()
-		.credentials(Credentials::new("me@simoneromano.eu".into(), "djWfbMom".into()))
+		.credentials(Credentials::new(
+			APP_SETTINGS.smtp.username.clone(),
+			APP_SETTINGS.smtp.password.clone(),
+		))
 		.smtp_utf8(true)
 		.connection_reuse(ConnectionReuseParameters::ReuseUnlimited)
 }

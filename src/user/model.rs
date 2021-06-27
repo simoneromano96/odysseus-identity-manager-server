@@ -59,7 +59,11 @@ pub struct User {
 impl User {
 	/// Create a new user
 	pub async fn create_user(db: &Database, input: CreateUserInput) -> Result<Self, UserErrors> {
-		let CreateUserInput { username, password, email } = input;
+		let CreateUserInput {
+			username,
+			password,
+			email,
+		} = input;
 
 		// Hash the password
 		let password = hash_password(&password)?;
@@ -79,7 +83,9 @@ impl User {
 
 	pub async fn login(db: &Database, username: &str, password: &str) -> Result<Self, UserErrors> {
 		// Find the user
-		let user = Self::find_by_username(db, username).await?.ok_or(UserErrors::UserNotFound)?;
+		let user = Self::find_by_username(db, username)
+			.await?
+			.ok_or(UserErrors::UserNotFound)?;
 
 		// Verify the password
 		verify_password(&user.password, password)?;

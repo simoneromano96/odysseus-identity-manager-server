@@ -70,7 +70,7 @@ fn create_base_spec() -> DefaultApiRaw {
 		email: Some(String::from("simoneromano@tutanota.de")),
 		url: Some(String::from("https://github.com/simoneromano96")),
 	};
-	
+
 	// Add licence
 	let license = License {
 		name: Some(String::from("GNU General Public License v3.0")),

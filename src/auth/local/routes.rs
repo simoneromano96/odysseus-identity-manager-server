@@ -1,6 +1,10 @@
-use crate::{auth::AuthErrors, settings::{HANDLEBARS, SMTP_CLIENT}, user::{CreateUserInput, User, UserErrors, UserInfo}};
+use crate::{
+	auth::AuthErrors,
+	settings::{HANDLEBARS, SMTP_CLIENT},
+	user::{CreateUserInput, User, UserErrors, UserInfo},
+};
 
-use lettre::{SmtpClient, SmtpTransport, Transport, smtp::authentication::Credentials};
+use lettre::{smtp::authentication::Credentials, SmtpClient, SmtpTransport, Transport};
 use lettre_email::EmailBuilder;
 use paperclip::actix::{
 	api_v2_operation, post,

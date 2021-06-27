@@ -13,8 +13,10 @@ struct ErrorResponse {
 }
 
 #[api_v2_errors(
-	code = 404, description = "Could not find user",
-	code = 500, description = "There has been an error while validating this request, please try again",
+	code = 404,
+	description = "Could not find user",
+	code = 500,
+	description = "There has been an error while validating this request, please try again"
 )]
 #[derive(Error, Debug)]
 pub enum ConsentErrors {
