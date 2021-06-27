@@ -1,4 +1,8 @@
-use crate::{auth::AuthErrors, settings::{APP_SETTINGS, HANDLEBARS, SMTP_CLIENT}, user::{CreateUserInput, User, UserErrors, UserInfo}};
+use crate::{
+	auth::AuthErrors,
+	settings::{APP_SETTINGS, HANDLEBARS, SMTP_CLIENT},
+	user::{CreateUserInput, User, UserErrors, UserInfo},
+};
 
 use lettre::{SmtpTransport, Transport};
 use lettre_email::EmailBuilder;
@@ -27,7 +31,7 @@ pub async fn signup(
 		Ok(_) => {
 			// Create a user
 			let user = User::create_user(&db, create_user_input.into_inner()).await?;
-			let html_mail = HANDLEBARS.render("signup", &user).unwrap();
+			let html_mail = HANDLEBARS.render("signup", &user)?;
 
 			// Create email
 			let email = EmailBuilder::new()
@@ -39,13 +43,12 @@ pub async fn signup(
 				.subject("You signed up successfully!")
 				// Email html body
 				.html(html_mail)
-				.build()
-				.unwrap();
-			
+				.build()?;
+
 			// Create transport
 			let mut mailer = SmtpTransport::new(SMTP_CLIENT.clone());
 			// Send the email
-			mailer.send(email.into()).unwrap();
+			mailer.send(email.into()).map_err(|_| AuthErrors::SendEmailError)?;
 
 			Ok(Json(user.into()))
 		}

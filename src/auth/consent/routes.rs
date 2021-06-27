@@ -18,7 +18,7 @@ use super::{ConsentErrors, OauthConsentBody, OauthConsentRequest};
 
 /// User consent
 ///
-/// Starts the consent flow, responds with a redirect
+/// Starts the consent request flow, responds with a redirect
 #[api_v2_operation]
 #[get("/consent")]
 pub async fn get_consent(
@@ -95,9 +95,9 @@ pub async fn get_consent(
 	)
 }
 
-// User login
+// User conset
 //
-// Logs in the user via the provided credentials, responds with a redirect to follow
+// Accepts the consent request, responds with a redirect to follow
 #[api_v2_operation]
 #[post("/consent")]
 pub async fn post_consent(

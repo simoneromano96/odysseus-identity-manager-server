@@ -1,4 +1,7 @@
 use actix_web::{http::StatusCode, Error as ActixError, HttpResponse, ResponseError};
+use handlebars::RenderError;
+use lettre_email::error::Error as BuildEmailError;
+use paperclip::actix::api_v2_errors;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use url::ParseError;
@@ -11,6 +14,12 @@ struct ErrorResponse {
 	error: String,
 }
 
+#[api_v2_errors(
+	code = 400,
+	description = "Wrong input",
+	code = 500,
+	description = "Internal server error, could be a db connection error, email server error"
+)]
 #[derive(Error, Debug)]
 pub enum AuthErrors {
 	#[error("Internal server error")]
@@ -23,8 +32,12 @@ pub enum AuthErrors {
 	PasswordError(#[from] PasswordErrors),
 	#[error("Invalid URL: {0}")]
 	InvalidUrl(#[from] ParseError),
-	#[error("Internal server error")]
-	GenericError,
+	#[error("{0}")]
+	HandlebarsError(#[from] RenderError),
+	#[error("{0}")]
+	BuildEmailError(#[from] BuildEmailError),
+	#[error("Could not send email!")]
+	SendEmailError,
 }
 
 impl ResponseError for AuthErrors {
