@@ -71,10 +71,23 @@ impl Settings {
 		// Get current RUN_MODE, should be: development/production
 		let current_env = env::var("RUN_MODE").unwrap_or_else(|_| String::from("development"));
 
+		// Get current LOCAL, should be: true when running locally
+		let local = env::var("LOCAL").unwrap_or_default() == "true";
+
 		// From current path add /environments
 		config_file_path.push("environments");
-		// Add RUN_MODE.yaml
-		config_file_path.push(format!("{}.yaml", current_env));
+
+		// ex. development/production
+		let mut filename = current_env;
+		// Add local
+		if local {
+			filename.push_str(".local");
+		}
+		// Add extension
+		filename.push_str(".yaml");
+
+		// Add RUN_MODE{.local}.yaml
+		config_file_path.push(filename);
 
 		// Add in the current environment file
 		// Default to 'development' env
