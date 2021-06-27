@@ -9,4 +9,8 @@ pub struct SMTPSettings {
 	pub username: String,
 	/// The password credential
 	pub password: String,
+	/// The sender email address
+	pub address: String,
+	/// The sender email alias
+	pub alias: String,
 }

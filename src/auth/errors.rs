@@ -23,6 +23,8 @@ pub enum AuthErrors {
 	PasswordError(#[from] PasswordErrors),
 	#[error("Invalid URL: {0}")]
 	InvalidUrl(#[from] ParseError),
+	#[error("Internal server error")]
+	GenericError,
 }
 
 impl ResponseError for AuthErrors {

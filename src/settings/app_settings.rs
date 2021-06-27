@@ -147,8 +147,10 @@ fn init_ory_config() -> OryConfiguration {
 }
 
 fn init_handlebars() -> Handlebars<'static> {
+	// Base path for all templates
 	let mut base_path: PathBuf = PathBuf::new();
 	base_path.push(&APP_SETTINGS.template.path);
+	// Add signup file
 	let signup_path = base_path.join("signup.hbs");
 	// create the handlebars registry
 	let mut handlebars = handlebars::Handlebars::new();
@@ -156,6 +158,8 @@ fn init_handlebars() -> Handlebars<'static> {
 	handlebars
 		.register_template_file("signup", signup_path)
 		.expect("Could not register `signup` template!");
+	
+	info!("Registered successfully all templates!");
 
 	handlebars
 }
