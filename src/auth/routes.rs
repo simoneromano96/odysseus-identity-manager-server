@@ -9,6 +9,7 @@ pub fn init_routes(cfg: &mut ServiceConfig) {
 	cfg.service(validate_email);
 
 	// Oauth routes
+	// TODO: actually split them behind a scope
 	cfg.service(get_consent);
 	cfg.service(post_consent);
 	cfg.service(get_login);

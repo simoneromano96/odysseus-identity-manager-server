@@ -12,6 +12,11 @@ pub struct LoginInput {
 }
 
 #[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
-pub struct OauthLoginRequest {
+pub struct LoginRequest {
+	pub login_challenge: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
+pub struct OAuthLoginRequest {
 	pub login_challenge: String,
 }

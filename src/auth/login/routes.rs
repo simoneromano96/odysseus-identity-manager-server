@@ -7,7 +7,7 @@ use crate::{
 
 use actix_web::web::Query;
 use log::error;
-use ory_hydra_client::apis::admin_api;
+use ory_hydra_client::{apis::admin_api, models::CompletedRequest};
 use paperclip::actix::{
 	api_v2_operation, get, post,
 	web::{Data, HttpResponse, Json},
@@ -15,14 +15,14 @@ use paperclip::actix::{
 use url::Url;
 use wither::mongodb::Database as MongoDatabase;
 
-use super::{LoginErrors, LoginInput, OauthLoginRequest};
+use super::{LoginErrors, LoginInput, OAuthLoginRequest, LoginRequest};
 
 /// User login
 ///
 /// Starts the login flow, responds with a redirect
 #[api_v2_operation]
 #[get("/login")]
-pub async fn get_login(oauth_request: Query<OauthLoginRequest>) -> Result<HttpResponse, LoginErrors> {
+pub async fn get_login(oauth_request: Query<OAuthLoginRequest>) -> Result<HttpResponse, LoginErrors> {
 	// let login_challenge = oauth_request.login_challenge;
 
 	// Get login request
@@ -66,7 +66,7 @@ pub async fn get_login(oauth_request: Query<OauthLoginRequest>) -> Result<HttpRe
 #[post("/login")]
 pub async fn post_login(
 	login_input: Json<LoginInput>,
-	oauth_request: Query<OauthLoginRequest>,
+	login_request: Query<LoginRequest>,
 	db: Data<MongoDatabase>,
 ) -> Result<Json<AcceptedRequest>, LoginErrors> {
 	// Try to login user
@@ -74,10 +74,16 @@ pub async fn post_login(
 
 	// Safe to unwrap since the user exists
 	let subject = user.id.clone().unwrap().to_string();
+	// TODO: add again sessions
 	// TODO: add support for 2fa
+	// TODO: handle local authentication
 
 	// Accept login request
-	let accept_login_request = handle_accept_login_request(&subject, &oauth_request.login_challenge).await?;
+	let accept_login_request = match &login_request.login_challenge {
+    Some(login_challenge) => handle_accept_login_request(&subject, login_challenge).await?.into(),
+    None => AcceptedRequest { redirect_to: "TODO".to_string() }
+	};
 
-	Ok(Json(accept_login_request.into()))
+
+	Ok(Json(accept_login_request))
 }

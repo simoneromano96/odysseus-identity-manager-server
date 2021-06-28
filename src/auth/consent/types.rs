@@ -2,7 +2,9 @@ use paperclip::actix::Apiv2Schema;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
-pub struct OauthConsentRequest {
+/// Consent request challenge
+pub struct OAuthConsentRequest {
+	/// The challenge code
 	pub consent_challenge: String,
 }
 
@@ -16,6 +18,7 @@ pub struct ConsentQueryParams {
 
 #[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
 #[serde(rename_all = "camelCase")]
-pub struct OauthConsentBody {
+pub struct OAuthConsentBody {
+	/// The user authorized these scopes
 	pub scopes: Vec<String>,
 }

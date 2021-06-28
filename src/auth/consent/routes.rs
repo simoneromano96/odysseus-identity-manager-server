@@ -14,7 +14,7 @@ use serde_qs;
 use url::Url;
 use wither::mongodb::Database as MongoDatabase;
 
-use super::{ConsentErrors, OauthConsentBody, OauthConsentRequest};
+use super::{ConsentErrors, OAuthConsentBody, OAuthConsentRequest};
 
 /// User consent
 ///
@@ -22,7 +22,7 @@ use super::{ConsentErrors, OauthConsentBody, OauthConsentRequest};
 #[api_v2_operation]
 #[get("/consent")]
 pub async fn get_consent(
-	oauth_request: Query<OauthConsentRequest>,
+	oauth_request: Query<OAuthConsentRequest>,
 	db: Data<MongoDatabase>,
 ) -> Result<HttpResponse, ConsentErrors> {
 	let ask_consent_request = admin_api::get_consent_request(&ORY_HYDRA_CONFIGURATION, &oauth_request.consent_challenge)
@@ -101,8 +101,8 @@ pub async fn get_consent(
 #[api_v2_operation]
 #[post("/consent")]
 pub async fn post_consent(
-	oauth_request: Query<OauthConsentRequest>,
-	data: Json<OauthConsentBody>,
+	oauth_request: Query<OAuthConsentRequest>,
+	data: Json<OAuthConsentBody>,
 	db: Data<MongoDatabase>,
 	// session: Session,
 ) -> Result<Json<AcceptedRequest>, ConsentErrors> {
