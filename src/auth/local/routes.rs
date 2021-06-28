@@ -37,7 +37,7 @@ pub async fn signup(
 			// Create a user
 			let user = User::create_user(&db, create_user_input.into_inner()).await?;
 
-			let username = user.preferred_username.clone().unwrap_or("Anonymous".to_string());
+			let username = user.preferred_username.clone().unwrap_or_else(|| "Anonymous".to_string());
 
 			// Safe to unwrap
 			let user_id = user.id.clone().unwrap();

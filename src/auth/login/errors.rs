@@ -28,8 +28,8 @@ pub enum LoginErrors {
 	InvalidUrl(#[from] ParseError),
 	#[error("Internal server error: {0}")]
 	JSONParseError(#[from] JSONError),
-	#[error("missing required parameters")]
-	MissingRequiredParameters,
+	// #[error("missing required parameters")]
+	// MissingRequiredParameters,
 }
 
 impl ResponseError for LoginErrors {
@@ -43,7 +43,7 @@ impl ResponseError for LoginErrors {
 	fn status_code(&self) -> StatusCode {
 		match self {
 			Self::UserCreationError(UserErrors::DatabaseError(_)) => StatusCode::BAD_REQUEST,
-			Self::MissingRequiredParameters => StatusCode::BAD_REQUEST,
+			// Self::MissingRequiredParameters => StatusCode::BAD_REQUEST,
 			Self::PasswordError(_) => StatusCode::BAD_REQUEST,
 			_ => StatusCode::INTERNAL_SERVER_ERROR,
 		}

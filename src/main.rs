@@ -17,10 +17,10 @@ mod settings;
 mod user;
 mod utils;
 
-const VERSION: &'static str = env!("CARGO_PKG_VERSION");
-const LICENSE: &'static str = env!("CARGO_PKG_LICENSE");
-const LICENCE_URI: &'static str = env!("CARGO_PKG_LICENSE_FILE");
-const DESCRIPTION: &'static str = env!("CARGO_PKG_DESCRIPTION");
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+const LICENSE: &str = env!("CARGO_PKG_LICENSE");
+const LICENCE_URI: &str = env!("CARGO_PKG_LICENSE_FILE");
+const DESCRIPTION: &str = env!("CARGO_PKG_DESCRIPTION");
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
