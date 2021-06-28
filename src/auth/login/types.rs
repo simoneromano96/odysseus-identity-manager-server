@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct LoginInput {
 	/// The new user username, must be unique.
-	pub username: String,
+	pub email: String,
 	/// The new user password.
 	pub password: String,
 }

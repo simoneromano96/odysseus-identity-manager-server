@@ -6,9 +6,9 @@ use wither::{
 	WitherError,
 };
 
-use crate::utils::{hash_password, verify_password};
+use crate::{auth::NewUserInput, utils::{hash_password, verify_password}};
 
-use super::{Address, CreateUserInput, Gender, UserErrors};
+use super::{Address, Gender, UserErrors};
 
 /// User representation
 #[derive(Debug, Default, Model, Serialize, Deserialize)]
@@ -18,7 +18,7 @@ pub struct User {
 	#[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
 	pub id: Option<ObjectId>,
 	/// Shorthand name by which the End-User wishes to be referred to at the RP, such as janedoe or j.doe. This value MAY be any valid JSON string including special characters such as @, /, or whitespace.
-	pub preferred_username: String,
+	pub preferred_username: Option<String>,
 	/// The user's hashed password.
 	pub password: String,
 	/// End-User's preferred e-mail address. Its value MUST conform to the RFC 5322 [RFC5322] addr-spec syntax
@@ -58,8 +58,8 @@ pub struct User {
 
 impl User {
 	/// Create a new user
-	pub async fn create_user(db: &Database, input: CreateUserInput) -> Result<Self, UserErrors> {
-		let CreateUserInput {
+	pub async fn create_user(db: &Database, input: NewUserInput) -> Result<Self, UserErrors> {
+		let NewUserInput {
 			username,
 			password,
 			email,
@@ -81,9 +81,9 @@ impl User {
 		Ok(user)
 	}
 
-	pub async fn login(db: &Database, username: &str, password: &str) -> Result<Self, UserErrors> {
+	pub async fn login(db: &Database, email: &str, password: &str) -> Result<Self, UserErrors> {
 		// Find the user
-		let user = Self::find_by_username(db, username)
+		let user = Self::find_by_email(db, email)
 			.await?
 			.ok_or(UserErrors::UserNotFound)?;
 
@@ -99,5 +99,9 @@ impl User {
 
 	pub async fn find_by_username(db: &Database, username: &str) -> Result<Option<Self>, WitherError> {
 		User::find_one(db, doc! { "username": username }, None).await
+	}
+
+	pub async fn find_by_email(db: &Database, email: &str) -> Result<Option<Self>, WitherError> {
+		User::find_one(db, doc! { "email": email }, None).await
 	}
 }

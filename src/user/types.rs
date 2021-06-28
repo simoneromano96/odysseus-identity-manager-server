@@ -18,19 +18,8 @@ pub enum Gender {
 	Female,
 }
 
-/// New user input data
-#[derive(Debug, Serialize, Deserialize, Apiv2Schema, Validate)]
-pub struct CreateUserInput {
-	/// The new user username.
-	pub username: String,
-	/// The new user password.
-	pub password: String,
-	/// User email, must be unique.
-	#[validate(email)]
-	pub email: String,
-}
-
 /// Available User info
+/// TODO: Conform to OpenID Connect scopes
 #[derive(Debug, Default, Serialize, Deserialize, Apiv2Schema)]
 pub struct UserInfo {
 	/// The ID of the model and the Subject: Identifier for the End-User at the Issuer.
@@ -41,7 +30,7 @@ pub struct UserInfo {
 	)]
 	pub id: Option<ObjectId>,
 	/// Shorthand name by which the End-User wishes to be referred to at the RP, such as janedoe or j.doe. This value MAY be any valid JSON string including special characters such as @, /, or whitespace.
-	pub preferred_username: String,
+	pub preferred_username: Option<String>,
 	/// End-User's preferred e-mail address. Its value MUST conform to the RFC 5322 [RFC5322] addr-spec syntax
 	pub email: String,
 	/// If the user email has been verified

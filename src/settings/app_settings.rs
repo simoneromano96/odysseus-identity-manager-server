@@ -21,7 +21,7 @@ pub static APP_SETTINGS: Lazy<Settings> = Lazy::new(Settings::init_config);
 pub static ORY_HYDRA_CONFIGURATION: Lazy<OryConfiguration> = Lazy::new(init_ory_config);
 pub static HANDLEBARS: Lazy<Handlebars> = Lazy::new(init_handlebars);
 pub static SMTP_CLIENT: Lazy<SmtpClient> = Lazy::new(init_smtp);
-pub static TOTP_GENERATOR: Lazy<TOTP> = Lazy::new(init_totp);
+pub static SIMPLE_TOTP_LONG_GENERATOR: Lazy<TOTP> = Lazy::new(init_simple_totp_long);
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -44,6 +44,14 @@ pub struct TemplateSettings {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct TOTPSettings {
+	/// The token creation secret
+	pub secret: String,
+	/// The token valid period in seconds
+	pub period: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Settings {
 	/// Logger configuration
@@ -58,10 +66,12 @@ pub struct Settings {
 	pub server: ServerSettings,
 	/// Session configuration
 	pub session: SessionSettings,
-	/// Template directory
+	/// Template configuration
 	pub template: TemplateSettings,
 	/// SMTP configuration
 	pub smtp: SMTPSettings,
+	/// Time-based one time token password configuration
+	pub totp: TOTPSettings,
 }
 
 impl Settings {
@@ -163,27 +173,48 @@ fn init_handlebars() -> Handlebars<'static> {
 		.register_template_file("signup", signup_path)
 		.expect("Could not register `signup` template!");
 
-	info!("Registered successfully all templates!");
+	info!("Successfully Registered all templates!");
 
 	handlebars
 }
 
 fn init_smtp() -> SmtpClient {
-	SmtpClient::new_simple(&APP_SETTINGS.smtp.domain)
-		.unwrap()
-		.credentials(Credentials::new(
-			APP_SETTINGS.smtp.username.clone(),
-			APP_SETTINGS.smtp.password.clone(),
-		))
+	let SMTPSettings {
+		domain,
+		username,
+		password,
+		..
+	} = &APP_SETTINGS.smtp;
+
+	SmtpClient::new_simple(domain)
+		.expect("Could not create SMTP client!")
+		.credentials(Credentials::new(username.clone(), password.clone()))
 		.smtp_utf8(true)
 		.connection_reuse(ConnectionReuseParameters::ReuseUnlimited)
 }
 
-fn init_totp() -> TOTP {
+fn init_simple_totp_long() -> TOTP {
+	let TOTPSettings { secret, period } = &APP_SETTINGS.totp;
+	let period = period.parse().expect("Could not parse TOTP period!");
+
 	TOTPBuilder::new()
-		.ascii_key("test")
+		.ascii_key(secret)
 		.hash_function(Sha3_512)
-		.period(10)
+		.period(period)
+		.finalize()
+		.expect("Could not initialize totp generator")
+}
+
+/// Creates a "keyed" totp, useful for generating user-based tokens
+pub fn init_keyed_totp_long(key: &str) -> TOTP {
+	let TOTPSettings { secret, period } = &APP_SETTINGS.totp;
+	info!("{:?}", period);
+	let period = period.parse().expect("Could not parse TOTP period!");
+
+	TOTPBuilder::new()
+		.ascii_key(&format!("{}_{}", key, secret))
+		.hash_function(Sha3_512)
+		.period(period)
 		.finalize()
 		.expect("Could not initialize totp generator")
 }

@@ -70,10 +70,11 @@ pub async fn post_login(
 	db: Data<MongoDatabase>,
 ) -> Result<Json<AcceptedRequest>, LoginErrors> {
 	// Try to login user
-	let user = User::login(&db, &login_input.username, &login_input.password).await?;
+	let user = User::login(&db, &login_input.email, &login_input.password).await?;
 
 	// Safe to unwrap since the user exists
 	let subject = user.id.clone().unwrap().to_string();
+	// TODO: add support for 2fa
 
 	// Accept login request
 	let accept_login_request = handle_accept_login_request(&subject, &oauth_request.login_challenge).await?;

@@ -48,3 +48,9 @@ smtp:
   address: system@yourdomain.com
   # The sender email alias
   alias: system
+# TOTP generation
+totp:
+  # The secret key
+  secret: 1kGOuMcwejNSmAu6
+  # The validity period (1 day)
+  period: 86400

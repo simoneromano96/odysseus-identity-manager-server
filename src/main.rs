@@ -17,6 +17,11 @@ mod settings;
 mod user;
 mod utils;
 
+const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+const LICENSE: &'static str = env!("CARGO_PKG_LICENSE");
+const LICENCE_URI: &'static str = env!("CARGO_PKG_LICENSE_FILE");
+const DESCRIPTION: &'static str = env!("CARGO_PKG_DESCRIPTION");
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
 	init_logger();
@@ -73,15 +78,15 @@ fn create_base_spec() -> DefaultApiRaw {
 
 	// Add licence
 	let license = License {
-		name: Some(String::from("GNU General Public License v3.0")),
-		url: Some(String::from("https://www.gnu.org/licenses/gpl-3.0-standalone.html")),
+		name: Some(LICENSE.into()),
+		url: Some(LICENCE_URI.into()),
 	};
 
 	// Create base specification
 	spec.info = Info {
-		version: "0.6.1-alpha.3".into(),
+		version: VERSION.into(),
 		title: "Odysseus identity manager server".into(),
-		description: Some(String::from("Handle signup, login, logout")),
+		description: Some(DESCRIPTION.into()),
 		contact: Some(contact),
 		license: Some(license),
 	};
