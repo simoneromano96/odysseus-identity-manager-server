@@ -81,7 +81,7 @@ pub async fn signup(
 /// CURRENTLY UNIMPLENTED!
 #[api_v2_operation]
 #[get("/validate-email")]
-pub async fn validate_email(db: Data<MongoDatabase>, code: Query<ValidateCode>) -> Result<HttpResponse, AuthErrors> {
+pub async fn validate_email(_db: Data<MongoDatabase>, code: Query<ValidateCode>) -> Result<HttpResponse, AuthErrors> {
 	match code.validate() {
 		Ok(_) => {
 			// Get user from session

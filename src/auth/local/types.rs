@@ -17,6 +17,6 @@ pub struct NewUserInput {
 /// Code validation input
 #[derive(Debug, Serialize, Deserialize, Apiv2Schema, Validate)]
 pub struct ValidateCode {
-  /// The TOTP code.
-  pub code: String,
+	/// The TOTP code.
+	pub code: String,
 }

@@ -29,7 +29,7 @@ pub enum LoginErrors {
 	#[error("Internal server error: {0}")]
 	JSONParseError(#[from] JSONError),
 	#[error("missing required parameters")]
-	MissingRequiredParameters
+	MissingRequiredParameters,
 }
 
 impl ResponseError for LoginErrors {

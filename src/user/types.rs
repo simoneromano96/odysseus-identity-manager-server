@@ -2,7 +2,7 @@ use crate::utils::serialize_object_id;
 
 use paperclip::actix::Apiv2Schema;
 use serde::{Deserialize, Serialize};
-use validator::Validate;
+
 use wither::bson::oid::ObjectId;
 
 use super::User;

@@ -7,7 +7,7 @@ use crate::{
 
 use actix_web::web::Query;
 use log::error;
-use ory_hydra_client::{apis::admin_api, models::CompletedRequest};
+use ory_hydra_client::apis::admin_api;
 use paperclip::actix::{
 	api_v2_operation, get, post,
 	web::{Data, HttpResponse, Json},
@@ -15,7 +15,7 @@ use paperclip::actix::{
 use url::Url;
 use wither::mongodb::Database as MongoDatabase;
 
-use super::{LoginErrors, LoginInput, OAuthLoginRequest, LoginRequest};
+use super::{LoginErrors, LoginInput, LoginRequest, OAuthLoginRequest};
 
 /// User login
 ///
@@ -80,10 +80,11 @@ pub async fn post_login(
 
 	// Accept login request
 	let accept_login_request = match &login_request.login_challenge {
-    Some(login_challenge) => handle_accept_login_request(&subject, login_challenge).await?.into(),
-    None => AcceptedRequest { redirect_to: "TODO".to_string() }
+		Some(login_challenge) => handle_accept_login_request(&subject, login_challenge).await?.into(),
+		None => AcceptedRequest {
+			redirect_to: "TODO".to_string(),
+		},
 	};
-
 
 	Ok(Json(accept_login_request))
 }
