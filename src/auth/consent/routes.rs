@@ -95,9 +95,9 @@ pub async fn get_consent(
 	)
 }
 
-// User conset
-//
-// Accepts the consent request, responds with a redirect to follow
+/// User consent
+///
+/// Accepts the consent request, responds with a redirect to follow
 #[api_v2_operation]
 #[post("/consent")]
 pub async fn post_consent(
