@@ -1,9 +1,10 @@
 use crate::{
-	auth::AuthErrors,
+	auth::{AuthErrors, LoginInput},
 	settings::{init_keyed_totp_long, SMTPSettings, APP_SETTINGS, HANDLEBARS, SMTP_CLIENT},
 	user::{User, UserErrors, UserInfo},
 };
 
+use actix_session::Session;
 use actix_web::HttpResponse;
 use lettre::{SmtpTransport, Transport};
 use lettre_email::EmailBuilder;
@@ -15,7 +16,7 @@ use serde::{Deserialize, Serialize};
 use validator::Validate;
 use wither::mongodb::Database as MongoDatabase;
 
-use super::{NewUserInput, ValidateCode};
+use super::{send_email_to_user, NewUserInput, ValidateCode};
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 struct SignupEMailData {
@@ -37,7 +38,10 @@ pub async fn signup(
 			// Create a user
 			let user = User::create_user(&db, create_user_input.into_inner()).await?;
 
-			let username = user.preferred_username.clone().unwrap_or_else(|| "Anonymous".to_string());
+			let username = user
+				.preferred_username
+				.clone()
+				.unwrap_or_else(|| "Anonymous".to_string());
 
 			// Safe to unwrap
 			let user_id = user.id.clone().unwrap();
@@ -50,24 +54,9 @@ pub async fn signup(
 			};
 
 			let html_mail = HANDLEBARS.render("signup", &signup_data)?;
-			let SMTPSettings { address, alias, .. } = &APP_SETTINGS.smtp;
+			let email_title = "You signed up in Odysseus successfully!";
 
-			// Create email
-			let email = EmailBuilder::new()
-				// Destination address/alias
-				.to((&user.email, &username))
-				// Sender address/alias
-				.from((address, alias))
-				// Email subject
-				.subject("You signed up successfully!")
-				// Email html body
-				.html(html_mail)
-				.build()?;
-
-			// Create transport
-			let mut mailer = SmtpTransport::new(SMTP_CLIENT.clone());
-			// Send the email
-			mailer.send(email.into()).map_err(|_| AuthErrors::SendEmailError)?;
+			send_email_to_user(&user.email, &username, email_title, &html_mail)?;
 
 			Ok(Json(user.into()))
 		}
@@ -75,27 +64,62 @@ pub async fn signup(
 	}
 }
 
+/// User local login
+///
+/// Logs in the user into Odysseus
+#[api_v2_operation]
+#[post("/login")]
+pub async fn local_login(
+	db: Data<MongoDatabase>,
+	login_input: Json<LoginInput>,
+	session: Session,
+) -> Result<Json<UserInfo>, AuthErrors> {
+	// Destructure login
+	let LoginInput { email, password } = &login_input.into_inner();
+
+	// Login the user, will also persist the session
+	let user = User::login_with_session(&db, &session, email, password).await?;
+
+	Ok(Json(user.into()))
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+struct ValidatedEMailData {
+	pub username: String,
+}
+
 /// User email validation
 ///
 /// Validates user email, will set email_verified to true
-/// CURRENTLY UNIMPLENTED!
 #[api_v2_operation]
 #[get("/validate-email")]
-pub async fn validate_email(_db: Data<MongoDatabase>, code: Query<ValidateCode>) -> Result<HttpResponse, AuthErrors> {
-	match code.validate() {
+pub async fn validate_email(
+	db: Data<MongoDatabase>,
+	session: Session,
+	code_input: Query<ValidateCode>,
+) -> Result<Json<UserInfo>, AuthErrors> {
+	match code_input.validate() {
 		Ok(_) => {
 			// Get user from session
-			// let user_id = session.get()
-			// let user = User::find_by_id(user_id)
-			// Check valid code with generator
-			// let generator = init_keyed_totp_long(&user_id.to_hex());
-			// generator.is_valid(code);
-			// Change `user.email_verified` to `true` and persist the user
-			// user.email_verified = true
-			// user.save().await?;
+			let mut user = User::user_from_session(&db, &session).await?;
+			// Validate email
+			user.validate_email(&db, &code_input.code).await?;
+
+			let username = user
+				.preferred_username
+				.clone()
+				.unwrap_or_else(|| "Anonymous".to_string());
+
+			let validated_email_data = ValidatedEMailData {
+				username: username.clone(),
+			};
 			// Send email
+			let html_mail = HANDLEBARS.render("email-verified", &validated_email_data)?;
+			let email_title = "You just verified your email successfully!";
+
+			send_email_to_user(&user.email, &username, email_title, &html_mail)?;
 			// Send positive response
-			Ok(HttpResponse::NotImplemented().body(""))
+			Ok(Json(user.into()))
 		}
 		Err(e) => Err(AuthErrors::UserCreationError(UserErrors::ValidationError(e))),
 	}

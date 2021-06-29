@@ -23,6 +23,8 @@ pub static HANDLEBARS: Lazy<Handlebars> = Lazy::new(init_handlebars);
 pub static SMTP_CLIENT: Lazy<SmtpClient> = Lazy::new(init_smtp);
 pub static SIMPLE_TOTP_LONG_GENERATOR: Lazy<TOTP> = Lazy::new(init_simple_totp_long);
 
+// TODO: add const for template names
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RedisSettings {
@@ -164,14 +166,19 @@ fn init_handlebars() -> Handlebars<'static> {
 	// Base path for all templates
 	let mut base_path: PathBuf = PathBuf::new();
 	base_path.push(&APP_SETTINGS.template.path);
-	// Add signup file
-	let signup_path = base_path.join("signup.hbs");
-	// create the handlebars registry
+
+	// Create the handlebars registry
 	let mut handlebars = handlebars::Handlebars::new();
-	// register template from a file and assign a name to it
+
+	// Register signup template
 	handlebars
-		.register_template_file("signup", signup_path)
+		.register_template_file("signup", base_path.join("signup.hbs"))
 		.expect("Could not register `signup` template!");
+
+	// Register verified email template
+	handlebars
+		.register_template_file("email-verified", base_path.join("email-verified.hbs"))
+		.expect("Could not register `email-verified` template!");
 
 	info!("Successfully Registered all templates!");
 

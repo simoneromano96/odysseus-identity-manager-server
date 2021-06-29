@@ -5,6 +5,7 @@ use crate::{
 	user::User,
 };
 
+use actix_session::Session;
 use actix_web::web::Query;
 use log::error;
 use ory_hydra_client::apis::admin_api;
@@ -19,7 +20,7 @@ use super::{LoginErrors, LoginInput, LoginRequest, OAuthLoginRequest};
 
 /// User login
 ///
-/// Starts the login flow, responds with a redirect
+/// Starts the OAuth login flow, responds with a redirect
 #[api_v2_operation]
 #[get("/login")]
 pub async fn get_login(oauth_request: Query<OAuthLoginRequest>) -> Result<HttpResponse, LoginErrors> {
@@ -66,25 +67,24 @@ pub async fn get_login(oauth_request: Query<OAuthLoginRequest>) -> Result<HttpRe
 #[post("/login")]
 pub async fn post_login(
 	login_input: Json<LoginInput>,
-	login_request: Query<LoginRequest>,
+	login_request: Query<OAuthLoginRequest>,
+	session: Session,
 	db: Data<MongoDatabase>,
 ) -> Result<Json<AcceptedRequest>, LoginErrors> {
+	// Destructure login
+	let LoginInput { email, password } = &login_input.into_inner();
+
 	// Try to login user
-	let user = User::login(&db, &login_input.email, &login_input.password).await?;
+	let user = User::login_with_session(&db, &session, email, password).await?;
 
 	// Safe to unwrap since the user exists
 	let subject = user.id.clone().unwrap().to_string();
-	// TODO: add again sessions
 	// TODO: add support for 2fa
-	// TODO: handle local authentication
 
 	// Accept login request
-	let accept_login_request = match &login_request.login_challenge {
-		Some(login_challenge) => handle_accept_login_request(&subject, login_challenge).await?.into(),
-		None => AcceptedRequest {
-			redirect_to: "TODO".to_string(),
-		},
-	};
+	let accept_login_request = handle_accept_login_request(&subject, &login_request.login_challenge)
+		.await?
+		.into();
 
 	Ok(Json(accept_login_request))
 }
