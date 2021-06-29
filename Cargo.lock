@@ -2132,7 +2132,7 @@ checksum = "1a5b3dd1c072ee7963717671d1ca129f1048fda25edea6b752bfc71ac8854170"
 
 [[package]]
 name = "odysseus-identity-manager"
-version = "0.7.1-alpha.3"
+version = "0.7.1-alpha.4"
 dependencies = [
  "actix-cors",
  "actix-redis",
