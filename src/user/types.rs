@@ -33,29 +33,29 @@ pub struct EmailScope {
 /// Available User info
 /// TODO: Conform to OpenID Connect scopes
 ///
-/// * email -> This scope value requests access to the following claims: 
-/// 	* email 
+/// * email -> This scope value requests access to the following claims:
+/// 	* email
 /// 	* email_verified
-/// * profile -> This scope value requests access to the End-User's default profile claims: 
-/// 	* name, 
-/// 	* family_name, 
-/// 	* given_name, 
-/// 	* middle_name, 
-/// 	* nickname, 
-/// 	* preferred_username, 
-/// 	* profile, 
-///		* picture, 
-///		* website, 
-///		* gender, 
-///		* birthdate, 
-///		* zoneinfo, 
-///		* locale, 
+/// * profile -> This scope value requests access to the End-User's default profile claims:
+/// 	* name,
+/// 	* family_name,
+/// 	* given_name,
+/// 	* middle_name,
+/// 	* nickname,
+/// 	* preferred_username,
+/// 	* profile,
+///		* picture,
+///		* website,
+///		* gender,
+///		* birthdate,
+///		* zoneinfo,
+///		* locale,
 ///		* updated_at.
 /// * address -> This scope value requests access to the following claims:
 /// 	* address
 /// * phone -> This scope value requests access to the following claims:  
 /// 	* phone_number,
-/// 	* phone_number_verified. 
+/// 	* phone_number_verified.
 #[derive(Debug, Default, Serialize, Deserialize, Apiv2Schema)]
 pub struct UserInfo {
 	/// The ID of the model and the Subject: Identifier for the End-User at the Issuer.

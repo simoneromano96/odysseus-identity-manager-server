@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use actix_session::Session;
 use serde::{Deserialize, Serialize};
 use wither::{

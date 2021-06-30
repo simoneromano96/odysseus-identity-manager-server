@@ -16,7 +16,7 @@ use paperclip::actix::{
 use url::Url;
 use wither::mongodb::Database as MongoDatabase;
 
-use super::{LoginErrors, LoginInput, LoginRequest, OAuthLoginRequest};
+use super::{LoginErrors, LoginInput, OAuthLoginRequest};
 
 /// User login
 ///
