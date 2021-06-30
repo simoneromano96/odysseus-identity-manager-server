@@ -122,3 +122,14 @@ pub async fn validate_email(
 		Err(e) => Err(AuthErrors::UserCreationError(UserErrors::ValidationError(e))),
 	}
 }
+
+/// Current user info
+///
+/// Gets current user info from session
+#[api_v2_operation]
+#[get("/user-info")]
+pub async fn user_info(db: Data<MongoDatabase>, session: Session) -> Result<Json<UserInfo>, AuthErrors> {
+	// Get user from session
+	let user = User::user_from_session(&db, &session).await?;
+	Ok(Json(user.into()))
+}

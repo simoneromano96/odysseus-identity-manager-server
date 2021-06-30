@@ -66,8 +66,8 @@ pub struct UserInfo {
 	)]
 	pub id: Option<ObjectId>,
 	/// Email scope
-	#[serde(flatten)]
-	pub email_scope: EmailScope,
+	#[serde(flatten, skip_serializing_if = "Option::is_none")]
+	pub email_scope: Option<EmailScope>,
 	/// Shorthand name by which the End-User wishes to be referred to at the RP, such as janedoe or j.doe. This value MAY be any valid JSON string including special characters such as @, /, or whitespace.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub preferred_username: Option<String>,
@@ -140,7 +140,7 @@ impl From<User> for UserInfo {
 		UserInfo {
 			id,
 			preferred_username,
-			email_scope,
+			email_scope: Some(email_scope),
 			given_name,
 			middle_name,
 			family_name,

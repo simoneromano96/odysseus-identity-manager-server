@@ -1,7 +1,8 @@
 use paperclip::actix::web::{scope, ServiceConfig};
 
 use super::{
-	get_consent, get_login, get_logout, local_login, post_consent, post_login, post_logout, signup, validate_email,
+	get_consent, get_login, get_logout, local_login, post_consent, post_login, post_logout, signup, user_info,
+	validate_email,
 };
 
 /// Configures all the auth routes
@@ -11,7 +12,8 @@ pub fn init_routes(cfg: &mut ServiceConfig) {
 		scope("/local")
 			.service(signup)
 			.service(validate_email)
-			.service(local_login),
+			.service(local_login)
+			.service(user_info),
 	);
 
 	// Oauth routes

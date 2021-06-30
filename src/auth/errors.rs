@@ -14,6 +14,7 @@ struct ErrorResponse {
 	error: String,
 }
 
+// TODO: fix errors
 #[api_v2_errors(
 	code = 400,
 	description = "Wrong input",
