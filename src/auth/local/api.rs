@@ -6,7 +6,12 @@ use crate::{
 	settings::{SMTPSettings, APP_SETTINGS, SMTP_CLIENT},
 };
 
-pub fn send_email_to_user(user_email: &str, username: &str, email_title: &str, html_mail: &str) -> Result<(), AuthErrors> {
+pub fn send_email_to_user(
+	user_email: &str,
+	username: &str,
+	email_title: &str,
+	html_mail: &str,
+) -> Result<(), AuthErrors> {
 	// Destructure SMTP settings
 	let SMTPSettings { address, alias, .. } = &APP_SETTINGS.smtp;
 	// Build email

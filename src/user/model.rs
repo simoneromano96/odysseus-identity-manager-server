@@ -9,7 +9,11 @@ use wither::{
 	WitherError,
 };
 
-use crate::{auth::NewUserInput, settings::init_keyed_totp_long, utils::{hash_password, verify_password}};
+use crate::{
+	auth::NewUserInput,
+	settings::init_keyed_totp_long,
+	utils::{hash_password, verify_password},
+};
 
 use super::{Address, Gender, UserErrors};
 

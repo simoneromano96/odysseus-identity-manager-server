@@ -1,7 +1,7 @@
 use actix_web::Error as ActixError;
 use thiserror::Error;
 use validator::ValidationErrors;
-use wither::{WitherError, bson::oid::Error as ObjectIdError};
+use wither::{bson::oid::Error as ObjectIdError, WitherError};
 
 use crate::utils::PasswordErrors;
 
