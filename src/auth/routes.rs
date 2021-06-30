@@ -21,11 +21,13 @@ pub fn init_routes(cfg: &mut ServiceConfig) {
 		scope("/oauth")
 			.service(get_consent)
 			.service(get_login)
-			.service(get_logout)
-			.service(post_consent),
+			.service(get_logout),
 	);
-	// TODO: fix them
-	// cfg.service(post_consent);
-	cfg.service(post_login);
-	cfg.service(post_logout);
+	// Oauth routes
+	cfg.service(
+		scope("/oauth")
+			.service(post_consent)
+			.service(post_login)
+			.service(post_logout),
+	);
 }

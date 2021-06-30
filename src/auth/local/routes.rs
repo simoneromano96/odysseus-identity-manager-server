@@ -37,6 +37,7 @@ pub async fn signup(
 			let user = User::create_user(&db, create_user_input.into_inner()).await?;
 
 			let username = user
+				.profile_scope
 				.preferred_username
 				.clone()
 				.unwrap_or_else(|| "Anonymous".to_string());
@@ -104,6 +105,7 @@ pub async fn validate_email(
 			user.validate_email(&db, &code_input.code).await?;
 
 			let username = user
+				.profile_scope
 				.preferred_username
 				.clone()
 				.unwrap_or_else(|| "Anonymous".to_string());
