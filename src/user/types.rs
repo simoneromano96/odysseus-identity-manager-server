@@ -21,6 +21,15 @@ pub enum Gender {
 	Female,
 }
 
+/// OpenID Connect email scope
+#[derive(Debug, Default, Serialize, Deserialize, Apiv2Schema)]
+pub struct EmailScope {
+	/// End-User's preferred e-mail address. Its value MUST conform to the RFC 5322 [RFC5322] addr-spec syntax
+	pub email: String,
+	/// If the user email has been verified
+	pub email_verified: bool,
+}
+
 /// Available User info
 /// TODO: Conform to OpenID Connect scopes
 ///
@@ -56,12 +65,12 @@ pub struct UserInfo {
 		serialize_with = "serialize_object_id"
 	)]
 	pub id: Option<ObjectId>,
+	/// Email scope
+	#[serde(flatten)]
+	pub email_scope: EmailScope,
 	/// Shorthand name by which the End-User wishes to be referred to at the RP, such as janedoe or j.doe. This value MAY be any valid JSON string including special characters such as @, /, or whitespace.
+	#[serde(skip_serializing_if = "Option::is_none")]
 	pub preferred_username: Option<String>,
-	/// End-User's preferred e-mail address. Its value MUST conform to the RFC 5322 [RFC5322] addr-spec syntax
-	pub email: String,
-	/// If the user email has been verified
-	pub email_verified: bool,
 	/// Given name(s) or first name(s) of the End-User. Note that in some cultures, people can have multiple given names; all can be present, with the names being separated by space characters.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub given_name: Option<String>,
@@ -110,8 +119,7 @@ impl From<User> for UserInfo {
 		let User {
 			id,
 			preferred_username,
-			email,
-			email_verified,
+			email_scope,
 			given_name,
 			middle_name,
 			family_name,
@@ -132,8 +140,7 @@ impl From<User> for UserInfo {
 		UserInfo {
 			id,
 			preferred_username,
-			email,
-			email_verified,
+			email_scope,
 			given_name,
 			middle_name,
 			family_name,

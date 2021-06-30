@@ -9,9 +9,13 @@ use wither::{
 	WitherError,
 };
 
-use crate::{auth::NewUserInput, settings::init_keyed_totp_long, utils::{hash_password, verify_password}};
+use crate::{
+	auth::NewUserInput,
+	settings::init_keyed_totp_long,
+	utils::{hash_password, verify_password},
+};
 
-use super::{Address, Gender, UserErrors};
+use super::{Address, EmailScope, Gender, UserErrors};
 
 /// User representation
 #[derive(Debug, Default, Model, Serialize, Deserialize)]
@@ -20,14 +24,15 @@ pub struct User {
 	/// The ID of the model and the Subject: Identifier for the End-User at the Issuer.
 	#[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
 	pub id: Option<ObjectId>,
-	/// Shorthand name by which the End-User wishes to be referred to at the RP, such as janedoe or j.doe. This value MAY be any valid JSON string including special characters such as @, /, or whitespace.
-	pub preferred_username: Option<String>,
 	/// The user's hashed password.
 	pub password: String,
-	/// End-User's preferred e-mail address. Its value MUST conform to the RFC 5322 [RFC5322] addr-spec syntax
-	pub email: String,
-	/// If the user email has been verified
-	pub email_verified: bool,
+	/// Shorthand name by which the End-User wishes to be referred to at the RP, such as janedoe or j.doe. This value MAY be any valid JSON string including special characters such as @, /, or whitespace.
+	pub preferred_username: Option<String>,
+	/// Email scope
+	#[serde(flatten)]
+	pub email_scope: EmailScope,
+	/// If the user chose to use the email address as a method of 2fa
+	pub email_2fa_enabled: bool,
 	// The next data is all optional
 	/// Given name(s) or first name(s) of the End-User. Note that in some cultures, people can have multiple given names; all can be present, with the names being separated by space characters.
 	pub given_name: Option<String>,
@@ -71,11 +76,16 @@ impl User {
 		// Hash the password
 		let password = hash_password(&password)?;
 
+		let email_scope = EmailScope {
+			email,
+			..Default::default()
+		};
+
 		let mut user = User {
 			id: None,
 			preferred_username: username,
 			password,
-			email,
+			email_scope,
 			..Default::default()
 		};
 
@@ -123,7 +133,7 @@ impl User {
 		let valid = generator.is_valid(code);
 		if valid {
 			// Change `user.email_verified` to `true` and persist the user
-			self.email_verified = true;
+			self.email_scope.email_verified = true;
 			self.save(db, None).await?;
 			Ok(())
 		} else {

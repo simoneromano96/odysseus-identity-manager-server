@@ -56,7 +56,7 @@ pub async fn signup(
 			let html_mail = HANDLEBARS.render("signup", &signup_data)?;
 			let email_title = "You signed up in Odysseus successfully!";
 
-			send_email_to_user(&user.email, &username, email_title, &html_mail)?;
+			send_email_to_user(&user.email_scope.email, &username, email_title, &html_mail)?;
 
 			Ok(Json(user.into()))
 		}
@@ -117,7 +117,7 @@ pub async fn validate_email(
 			let html_mail = HANDLEBARS.render("email-verified", &validated_email_data)?;
 			let email_title = "You just verified your email successfully!";
 
-			send_email_to_user(&user.email, &username, email_title, &html_mail)?;
+			send_email_to_user(&user.email_scope.email, &username, email_title, &html_mail)?;
 			// Send positive response
 			Ok(Json(user.into()))
 		}
