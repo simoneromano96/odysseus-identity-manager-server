@@ -1,6 +1,6 @@
 [package]
 name = "odysseus-identity-manager"
-version = "0.7.1-beta.2"
+version = "0.7.1-beta.3"
 authors = ["Simone Romano <simoneromano@tutanota.de>"]
 edition = "2018"
 publish = false
