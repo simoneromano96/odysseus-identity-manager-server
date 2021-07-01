@@ -1,4 +1,4 @@
-FROM rustlang/rust@sha256:ad43faa521e7982d7786b43f7afd1bd469dbaf9d9c9148ec18417cb34b0d21b3 as builder
+FROM rustlang/rust@sha256:51a79952f457741d24adb6b3918349f7b5723930e16358635a5a185a628991cb as builder
 
 # Enable cpu native optimizations
 ENV RUSTFLAGS="-C target-cpu=native"
@@ -11,7 +11,10 @@ RUN cargo install --path .
 
 FROM debian:stable-slim as production
 
-RUN apt-get update && apt-get install -y libssl-dev && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+  # Add native tls for lettre
+  apt-get install -y libssl-dev && \ 
+  rm -rf /var/lib/apt/lists/*
 
 WORKDIR /odysseus-identity-manager
 
