@@ -11,7 +11,7 @@ RUN cargo install --path .
 
 FROM debian:stable-slim as production
 
-# RUN apt-get update && apt-get install -y extra-runtime-dependencies && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y libssl-dev && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /odysseus-identity-manager
 
