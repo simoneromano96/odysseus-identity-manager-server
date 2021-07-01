@@ -1,6 +1,6 @@
 use actix_web::{http::StatusCode, Error as ActixError, HttpResponse, ResponseError};
 use handlebars::RenderError;
-use lettre_email::error::Error as BuildEmailError;
+use lettre::{address::AddressError, error::Error as LettreError};
 use paperclip::actix::api_v2_errors;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -35,8 +35,10 @@ pub enum AuthErrors {
 	InvalidUrl(#[from] ParseError),
 	#[error("{0}")]
 	HandlebarsError(#[from] RenderError),
-	#[error("{0}")]
-	BuildEmailError(#[from] BuildEmailError),
+	#[error("Email error: {0}")]
+	EmailError(#[from] LettreError),
+	#[error("Invalid address: {0}")]
+	InvalidEmailAddress(#[from] AddressError),
 	#[error("Could not send email!")]
 	SendEmailError,
 }

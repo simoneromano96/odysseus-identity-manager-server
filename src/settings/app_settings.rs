@@ -2,10 +2,7 @@ use std::{env, path::PathBuf};
 
 use config::{Config, Environment, File};
 use handlebars::Handlebars;
-use lettre::{
-	smtp::{authentication::Credentials, ConnectionReuseParameters},
-	SmtpClient,
-};
+use lettre::{transport::smtp::authentication::Credentials, SmtpTransport};
 use libreauth::{
 	hash::HashFunction::Sha3_512,
 	oath::{TOTPBuilder, TOTP},
@@ -20,7 +17,7 @@ use super::{HydraSettings, LoggerSettings, MongoSettings, SMTPSettings, ServerSe
 pub static APP_SETTINGS: Lazy<Settings> = Lazy::new(Settings::init_config);
 pub static ORY_HYDRA_CONFIGURATION: Lazy<OryConfiguration> = Lazy::new(init_ory_config);
 pub static HANDLEBARS: Lazy<Handlebars> = Lazy::new(init_handlebars);
-pub static SMTP_CLIENT: Lazy<SmtpClient> = Lazy::new(init_smtp);
+pub static SMTP_CLIENT: Lazy<SmtpTransport> = Lazy::new(init_smtp);
 pub static SIMPLE_TOTP_LONG_GENERATOR: Lazy<TOTP> = Lazy::new(init_simple_totp_long);
 
 // TODO: add const for template names
@@ -187,7 +184,7 @@ fn init_handlebars() -> Handlebars<'static> {
 	handlebars
 }
 
-fn init_smtp() -> SmtpClient {
+fn init_smtp() -> SmtpTransport {
 	let SMTPSettings {
 		domain,
 		username,
@@ -195,13 +192,21 @@ fn init_smtp() -> SmtpClient {
 		..
 	} = &APP_SETTINGS.smtp;
 
-	info!("Init smtp client: DOMAIN: {:?}, USERNAME: {:?}, PASSWORD: {:?}", &domain, &username, &password);
+	info!(
+		"Init smtp client: DOMAIN: {:?}, USERNAME: {:?}, PASSWORD: {:?}",
+		&domain, &username, &password
+	);
 
-	SmtpClient::new_simple(domain)
-		.expect("Could not create SMTP client!")
+	SmtpTransport::relay(domain)
+		.expect("Could not create SMTP transport!")
 		.credentials(Credentials::new(username.clone(), password.clone()))
-		.smtp_utf8(true)
-		.connection_reuse(ConnectionReuseParameters::ReuseUnlimited)
+		.build()
+
+	// SmtpClient::new_simple(domain)
+	// 	.expect("Could not create SMTP client!")
+	// 	.credentials(Credentials::new(username.clone(), password.clone()))
+	// 	.smtp_utf8(true)
+	// 	.connection_reuse(ConnectionReuseParameters::ReuseUnlimited)
 }
 
 fn init_simple_totp_long() -> TOTP {
@@ -219,7 +224,7 @@ fn init_simple_totp_long() -> TOTP {
 /// Creates a "keyed" totp, useful for generating user-based tokens
 pub fn init_keyed_totp_long(key: &str) -> TOTP {
 	let TOTPSettings { secret, period } = &APP_SETTINGS.totp;
-	
+
 	info!("init_keyed_totp_long: SECRET: {:?}, PERIOD: {:?}", secret, period);
 
 	let period = period.parse().expect("Could not parse TOTP period!");
