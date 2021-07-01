@@ -167,6 +167,8 @@ fn init_handlebars() -> Handlebars<'static> {
 	let mut base_path: PathBuf = PathBuf::new();
 	base_path.push(&APP_SETTINGS.template.path);
 
+	info!("Init template folder: {:?}", &base_path);
+
 	// Create the handlebars registry
 	let mut handlebars = handlebars::Handlebars::new();
 
@@ -193,6 +195,8 @@ fn init_smtp() -> SmtpClient {
 		..
 	} = &APP_SETTINGS.smtp;
 
+	info!("Init smtp client: DOMAIN: {:?}, USERNAME: {:?}, PASSWORD: {:?}", &domain, &username, &password);
+
 	SmtpClient::new_simple(domain)
 		.expect("Could not create SMTP client!")
 		.credentials(Credentials::new(username.clone(), password.clone()))
@@ -215,7 +219,9 @@ fn init_simple_totp_long() -> TOTP {
 /// Creates a "keyed" totp, useful for generating user-based tokens
 pub fn init_keyed_totp_long(key: &str) -> TOTP {
 	let TOTPSettings { secret, period } = &APP_SETTINGS.totp;
-	info!("{:?}", period);
+	
+	info!("init_keyed_totp_long: SECRET: {:?}, PERIOD: {:?}", secret, period);
+
 	let period = period.parse().expect("Could not parse TOTP period!");
 
 	TOTPBuilder::new()
