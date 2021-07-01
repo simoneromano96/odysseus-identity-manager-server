@@ -1,6 +1,13 @@
 version: "3.6"
 
 services:
+  app:
+    build: 
+      context: .
+      dockerfile: ./.docker/odysseus-identity-manager-server.dockerfile
+    ports: 
+      - 8000:80
+
   redis:
     image: redis:alpine
     restart: unless-stopped
