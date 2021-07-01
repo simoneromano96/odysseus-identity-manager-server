@@ -24,6 +24,7 @@ pub fn init_routes(cfg: &mut ServiceConfig) {
 			.service(get_logout),
 	);
 	// Oauth routes
+	// For some reason these must be separated
 	cfg.service(
 		scope("/oauth")
 			.service(post_consent)
