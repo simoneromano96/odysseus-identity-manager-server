@@ -19,4 +19,8 @@ COPY --from=builder /usr/local/cargo/bin/odysseus-identity-manager /odysseus-ide
 
 COPY ./environments/ /odysseus-identity-manager/environments/
 
+COPY ./src/templates/ /odysseus-identity-manager/templates/
+
+ENV APP_TEMPLATE_PATH=/odysseus-identity-manager/templates/
+
 CMD ["/odysseus-identity-manager/odysseus-identity-manager"]
