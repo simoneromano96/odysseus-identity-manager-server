@@ -1,4 +1,4 @@
-use lettre::{message::MultiPart, Message, SmtpTransport, Transport};
+use lettre::{message::MultiPart, Message, Transport};
 use log::{error, info};
 
 use crate::{

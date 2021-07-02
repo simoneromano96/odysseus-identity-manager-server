@@ -1,6 +1,6 @@
 use crate::{
 	auth::{AuthErrors, LoginInput},
-	settings::{init_keyed_totp_long, SMTPSettings, APP_SETTINGS, HANDLEBARS, SMTP_CLIENT},
+	settings::{init_keyed_totp_long, HANDLEBARS},
 	user::{User, UserErrors, UserInfo},
 };
 
@@ -59,7 +59,7 @@ pub async fn signup(
 
 			Ok(Json(user.into()))
 		}
-		Err(e) => Err(AuthErrors::UserCreationError(UserErrors::ValidationError(e))),
+		Err(e) => Err(AuthErrors::UserError(UserErrors::ValidationError(e))),
 	}
 }
 
@@ -91,11 +91,11 @@ struct ValidatedEMailData {
 ///
 /// Validates user email, will set email_verified to true
 #[api_v2_operation]
-#[get("/validate-email")]
+#[post("/validate-email")]
 pub async fn validate_email(
 	db: Data<MongoDatabase>,
 	session: Session,
-	code_input: Query<ValidateCode>,
+	code_input: Json<ValidateCode>,
 ) -> Result<Json<UserInfo>, AuthErrors> {
 	match code_input.validate() {
 		Ok(_) => {
@@ -121,7 +121,7 @@ pub async fn validate_email(
 			// Send positive response
 			Ok(Json(user.into()))
 		}
-		Err(e) => Err(AuthErrors::UserCreationError(UserErrors::ValidationError(e))),
+		Err(e) => Err(AuthErrors::UserError(UserErrors::ValidationError(e))),
 	}
 }
 

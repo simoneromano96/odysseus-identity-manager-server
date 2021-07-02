@@ -18,6 +18,10 @@ struct ErrorResponse {
 #[api_v2_errors(
 	code = 400,
 	description = "Wrong input",
+	code = 401,
+	description = "Wrong password",
+	code = 404,
+	description = "User not found, probably wrong credentials",
 	code = 500,
 	description = "Internal server error, could be a db connection error, email server error"
 )]
@@ -27,9 +31,9 @@ pub enum AuthErrors {
 	ActixError(#[from] ActixError),
 	#[error("Internal server error")]
 	DatabaseError(#[from] WitherError),
-	#[error("Could not create user: {0}")]
-	UserCreationError(#[from] UserErrors),
-	#[error("Password Error: {0}")]
+	#[error("{0}")]
+	UserError(#[from] UserErrors),
+	#[error("{0}")]
 	PasswordError(#[from] PasswordErrors),
 	#[error("Invalid URL: {0}")]
 	InvalidUrl(#[from] ParseError),
@@ -53,8 +57,11 @@ impl ResponseError for AuthErrors {
 
 	fn status_code(&self) -> StatusCode {
 		match self {
-			Self::UserCreationError(UserErrors::DatabaseError(_)) => StatusCode::BAD_REQUEST,
-			Self::UserCreationError(UserErrors::ValidationError(_)) => StatusCode::BAD_REQUEST,
+			Self::UserError(UserErrors::DatabaseError(_)) => StatusCode::BAD_REQUEST,
+			Self::UserError(UserErrors::ValidationError(_)) => StatusCode::BAD_REQUEST,
+			Self::UserError(UserErrors::UserNotFound) => StatusCode::NOT_FOUND,
+			Self::UserError(UserErrors::UserWithEmailNotFound(_)) => StatusCode::NOT_FOUND,
+			Self::UserError(UserErrors::HashError(PasswordErrors::InvalidPassword)) => StatusCode::UNAUTHORIZED,
 			Self::PasswordError(_) => StatusCode::BAD_REQUEST,
 			_ => StatusCode::INTERNAL_SERVER_ERROR,
 		}

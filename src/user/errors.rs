@@ -16,6 +16,8 @@ pub enum UserErrors {
 	HashError(#[from] PasswordErrors),
 	#[error("User not found")]
 	UserNotFound,
+	#[error("User with email {0} was not found")]
+	UserWithEmailNotFound(String),
 	#[error("Invalid code")]
 	InvalidCode,
 	#[error("{0}")]
