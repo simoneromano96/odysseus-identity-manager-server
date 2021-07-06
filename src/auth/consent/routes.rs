@@ -3,12 +3,11 @@ use crate::{
 	settings::{APP_SETTINGS, ORY_HYDRA_CONFIGURATION},
 };
 
-use actix_web::web::Query;
 use log::error;
 use ory_hydra_client::{apis::admin_api, models::ConsentRequest};
 use paperclip::actix::{
 	api_v2_operation, get, post,
-	web::{Data, HttpResponse, Json},
+	web::{Data, HttpResponse, Json, Query},
 };
 use serde_qs;
 use url::Url;
@@ -16,7 +15,7 @@ use wither::mongodb::Database as MongoDatabase;
 
 use super::{ConsentErrors, OAuthConsentBody, OAuthConsentRequest};
 
-/// User consent
+/// OAUTH User get consent
 ///
 /// Starts the consent request flow, responds with a redirect
 #[api_v2_operation]
@@ -95,7 +94,7 @@ pub async fn get_consent(
 	)
 }
 
-/// User consent
+/// OAUTH User post consent
 ///
 /// Accepts the consent request, responds with a redirect to follow
 #[api_v2_operation]

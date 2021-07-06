@@ -6,19 +6,18 @@ use crate::{
 };
 
 use actix_session::Session;
-use actix_web::web::Query;
 use log::error;
 use ory_hydra_client::apis::admin_api;
 use paperclip::actix::{
 	api_v2_operation, get, post,
-	web::{Data, HttpResponse, Json},
+	web::{Data, HttpResponse, Json, Query},
 };
 use url::Url;
 use wither::mongodb::Database as MongoDatabase;
 
 use super::{LoginErrors, LoginInput, OAuthLoginRequest};
 
-/// User login
+/// OAUTH User get login
 ///
 /// Starts the OAuth login flow, responds with a redirect
 #[api_v2_operation]
@@ -60,7 +59,7 @@ pub async fn get_login(oauth_request: Query<OAuthLoginRequest>) -> Result<HttpRe
 	)
 }
 
-/// User login
+/// OAUTH User post login
 ///
 /// Logs in the user via the provided credentials, responds with a redirect to follow
 #[api_v2_operation]

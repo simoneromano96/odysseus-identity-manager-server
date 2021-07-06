@@ -22,7 +22,7 @@ struct SignupEMailData {
 	pub code: String,
 }
 
-/// User signup
+/// LOCAL User signup
 ///
 /// Creates a new user but doesn't log in the user
 #[api_v2_operation]
@@ -63,7 +63,7 @@ pub async fn signup(
 	}
 }
 
-/// User local login
+/// LOCAL User login
 ///
 /// Logs in the user into Odysseus
 #[api_v2_operation]
@@ -87,7 +87,7 @@ struct ValidatedEMailData {
 	pub username: String,
 }
 
-/// User email validation
+/// LOCAL User email validation
 ///
 /// Validates user email, will set email_verified to true
 #[api_v2_operation]
@@ -125,7 +125,7 @@ pub async fn validate_email(
 	}
 }
 
-/// Current user info
+/// LOCAL Current user info
 ///
 /// Gets current user info from session
 #[api_v2_operation]

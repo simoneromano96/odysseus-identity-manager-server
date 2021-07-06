@@ -1,17 +1,16 @@
 use crate::{auth::AcceptedRequest, settings::APP_SETTINGS, settings::ORY_HYDRA_CONFIGURATION};
 
-use actix_web::web::Query;
 use log::error;
 use ory_hydra_client::apis::admin_api;
 use paperclip::actix::{
 	api_v2_operation, get, post,
-	web::{HttpResponse, Json},
+	web::{HttpResponse, Json, Query},
 };
 use url::Url;
 
 use super::{LogoutErrors, OauthLogoutRequest};
 
-/// User logout
+/// OAUTH get User logout
 ///
 /// Starts the logout flow, responds with a redirect
 #[api_v2_operation]
@@ -39,7 +38,7 @@ pub async fn get_logout(oauth_request: Query<OauthLogoutRequest>) -> Result<Http
 	)
 }
 
-/// User logout
+/// OAUTH post User logout
 ///
 /// Logs out the user, responds with a redirect to follow
 #[api_v2_operation]

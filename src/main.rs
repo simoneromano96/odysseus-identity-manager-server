@@ -2,12 +2,15 @@ use actix_cors::Cors;
 use actix_redis::RedisSession;
 use actix_web::{self, cookie, middleware, App, HttpServer};
 use paperclip::{
-	actix::{web::scope, OpenApiExt},
+	actix::{web::{scope}, OpenApiExt},
 	v2::models::{Contact, DefaultApiRaw, Info, License},
 };
 
 use crate::{
-	auth::init_routes,
+	auth::{
+		get_consent, get_login, get_logout, local_login, post_consent, post_login, post_logout, signup,
+		user_info, validate_email,
+	},
 	settings::APP_SETTINGS,
 	utils::{init_database, init_logger},
 };
@@ -55,7 +58,27 @@ async fn main() -> std::io::Result<()> {
 			.data(identity_database.clone())
 			// Record services and routes from this line.
 			.wrap_api_with_spec(spec)
-			.service(scope("/api").service(scope("/v1").configure(init_routes)))
+			.service(
+				scope("/api").service(
+					scope("/v1")
+						.service(
+							scope("/local")
+								.service(signup)
+								.service(validate_email)
+								.service(local_login)
+								.service(user_info),
+						)
+						.service(
+							scope("/oauth")
+								.service(get_consent)
+								.service(get_login)
+								.service(get_logout)
+								.service(post_consent)
+								.service(post_login)
+								.service(post_logout),
+						),
+				),
+			)
 			// Mount the JSON spec at this path.
 			.with_json_spec_at("/openapi/docs")
 			// Build the app
