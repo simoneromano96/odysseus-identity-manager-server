@@ -52,7 +52,10 @@ pub async fn get_consent(
 	let metadata = match client {
 		Some(client) => {
 			if let Some(metadata) = client.metadata {
-				serde_json::from_value(metadata)?
+				if let Ok(parsed_metadata) = serde_json::from_value(metadata) {
+					parsed_metadata
+				}
+				Metadata::default()
 			} else {
 				Metadata::default()
 			}
