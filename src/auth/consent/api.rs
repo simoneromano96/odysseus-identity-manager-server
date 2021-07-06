@@ -17,6 +17,8 @@ pub async fn create_user_session(subject: &str, db: &MongoDatabase, scopes: &[St
 	let id = ObjectId::with_string(subject).unwrap();
 	let user = User::find_by_id(db, &id).await?.ok_or(ConsentErrors::UserNotFound)?;
 	let mut user_info = UserInfo::default();
+	info!("{:?}", &scopes);
+
 	scopes.iter().for_each(|scope| {
 		if scope == "email" {
 			user_info.email_scope = Some(user.email_scope.clone());
@@ -28,10 +30,12 @@ pub async fn create_user_session(subject: &str, db: &MongoDatabase, scopes: &[St
 			user_info.address = user.address.clone();
 		}
 	});
+	info!("{:?}", &user_info);
 	let session = ConsentRequestSession {
 		id_token: Some(serde_json::to_value(&user_info)?),
 		access_token: Some(serde_json::to_value(&user_info)?),
 	};
+	info!("{:?}", &session);
 	Ok(session)
 }
 
@@ -50,6 +54,7 @@ pub async fn handle_accept_consent_request(
 	body.session = Some(Box::new(session.clone()));
 	body.remember = Some(true);
 	body.remember_for = Some(0);
+	info!("{:?}", &body);
 	let accept_consent_request =
 		admin_api::accept_consent_request(&ORY_HYDRA_CONFIGURATION, consent_challenge, Some(body))
 			.await

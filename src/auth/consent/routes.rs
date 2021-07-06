@@ -3,7 +3,7 @@ use crate::{
 	settings::{APP_SETTINGS, ORY_HYDRA_CONFIGURATION},
 };
 
-use log::error;
+use log::{error, info};
 use ory_hydra_client::{apis::admin_api, models::ConsentRequest};
 use paperclip::actix::{
 	api_v2_operation, get, post,
@@ -24,12 +24,16 @@ pub async fn get_consent(
 	oauth_request: Query<OAuthConsentRequest>,
 	db: Data<MongoDatabase>,
 ) -> Result<HttpResponse, ConsentErrors> {
+	info!("Handling get consent request");
+
 	let ask_consent_request = admin_api::get_consent_request(&ORY_HYDRA_CONFIGURATION, &oauth_request.consent_challenge)
 		.await
 		.map_err(|e| {
 			error!("{:?}", e);
 			ConsentErrors::HydraError
 		})?;
+
+	info!("{:?}", &ask_consent_request);
 
 	let ConsentRequest {
 		subject,
@@ -108,6 +112,8 @@ pub async fn post_consent(
 	db: Data<MongoDatabase>,
 	// session: Session,
 ) -> Result<Json<AcceptedRequest>, ConsentErrors> {
+	info!("Handling post consent request");
+
 	let consent_challenge = oauth_request.into_inner().consent_challenge;
 
 	let ask_consent_request = admin_api::get_consent_request(&ORY_HYDRA_CONFIGURATION, &consent_challenge)
@@ -125,7 +131,7 @@ pub async fn post_consent(
 	let accept_consent_request =
 		handle_accept_consent_request(subject, &db, &ask_consent_request, &data.scopes, &consent_challenge).await?;
 
-	// info!("{:?}", &accept_consent_request);
+	info!("{:?}", &accept_consent_request);
 
 	Ok(Json(accept_consent_request.into()))
 }
