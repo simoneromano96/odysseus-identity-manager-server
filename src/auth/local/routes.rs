@@ -8,7 +8,7 @@ use actix_session::Session;
 
 use paperclip::actix::{
 	api_v2_operation, get, post,
-	web::{Data, Json, Query},
+	web::{Data, Json},
 };
 use serde::{Deserialize, Serialize};
 use validator::Validate;

@@ -20,8 +20,8 @@ pub static HANDLEBARS: Lazy<Handlebars> = Lazy::new(init_handlebars);
 pub static SMTP_CLIENT: Lazy<SmtpTransport> = Lazy::new(init_smtp);
 pub static SIMPLE_TOTP_LONG_GENERATOR: Lazy<TOTP> = Lazy::new(init_simple_totp_long);
 
-pub const SIGNUP_TEMPLATE_NAME: &'static str = "signup";
-pub const EMAIL_VERIFIED_TEMPLATE_NAME: &'static str = "email-verified";
+pub const SIGNUP_TEMPLATE_NAME: &str = "signup";
+pub const EMAIL_VERIFIED_TEMPLATE_NAME: &str = "email-verified";
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

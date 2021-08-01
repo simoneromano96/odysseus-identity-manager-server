@@ -91,7 +91,7 @@ impl User {
 		// Find the user
 		let user = Self::find_by_email(db, email)
 			.await?
-			.ok_or(UserErrors::UserWithEmailNotFound(email.to_string()))?;
+			.ok_or_else(|| UserErrors::UserWithEmailNotFound(email.to_string()))?;
 
 		// Verify the password
 		verify_password(&user.password, password)?;
