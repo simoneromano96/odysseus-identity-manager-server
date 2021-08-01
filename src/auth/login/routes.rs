@@ -65,13 +65,13 @@ pub async fn get_login(oauth_request: Query<OAuthLoginRequest>) -> Result<HttpRe
 #[api_v2_operation]
 #[post("/login")]
 pub async fn post_login(
-	login_input: Json<LoginInput>,
+	Json(login_input): Json<LoginInput>,
 	login_request: Query<OAuthLoginRequest>,
 	session: Session,
 	db: Data<MongoDatabase>,
 ) -> Result<Json<AcceptedRequest>, LoginErrors> {
 	// Destructure login
-	let LoginInput { email, password } = &login_input.into_inner();
+	let LoginInput { email, password } = &login_input;
 
 	// Try to login user
 	let user = User::login_with_session(&db, &session, email, password).await?;
