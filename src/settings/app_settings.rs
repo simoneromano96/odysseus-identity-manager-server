@@ -20,7 +20,8 @@ pub static HANDLEBARS: Lazy<Handlebars> = Lazy::new(init_handlebars);
 pub static SMTP_CLIENT: Lazy<SmtpTransport> = Lazy::new(init_smtp);
 pub static SIMPLE_TOTP_LONG_GENERATOR: Lazy<TOTP> = Lazy::new(init_simple_totp_long);
 
-// TODO: add const for template names
+pub const SIGNUP_TEMPLATE_NAME: &'static str = "signup";
+pub const EMAIL_VERIFIED_TEMPLATE_NAME: &'static str = "email-verified";
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -171,12 +172,12 @@ fn init_handlebars() -> Handlebars<'static> {
 
 	// Register signup template
 	handlebars
-		.register_template_file("signup", base_path.join("signup.hbs"))
+		.register_template_file(SIGNUP_TEMPLATE_NAME, base_path.join("signup.hbs"))
 		.expect("Could not register `signup` template!");
 
 	// Register verified email template
 	handlebars
-		.register_template_file("email-verified", base_path.join("email-verified.hbs"))
+		.register_template_file(EMAIL_VERIFIED_TEMPLATE_NAME, base_path.join("email-verified.hbs"))
 		.expect("Could not register `email-verified` template!");
 
 	info!("Successfully Registered all templates!");

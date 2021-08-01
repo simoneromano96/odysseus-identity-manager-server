@@ -1,6 +1,6 @@
 use crate::{
 	auth::{AuthErrors, LoginInput},
-	settings::{init_keyed_totp_long, HANDLEBARS},
+	settings::{init_keyed_totp_long, EMAIL_VERIFIED_TEMPLATE_NAME, HANDLEBARS, SIGNUP_TEMPLATE_NAME},
 	user::{User, UserErrors, UserInfo},
 };
 
@@ -29,12 +29,12 @@ struct SignupEMailData {
 #[post("/signup")]
 pub async fn signup(
 	db: Data<MongoDatabase>,
-	create_user_input: Json<NewUserInput>,
+	Json(new_user_input): Json<NewUserInput>,
 ) -> Result<Json<UserInfo>, AuthErrors> {
-	match create_user_input.validate() {
+	match new_user_input.validate() {
 		Ok(_) => {
 			// Create a user
-			let user = User::create_user(&db, create_user_input.into_inner()).await?;
+			let user = User::create_user(&db, new_user_input).await?;
 
 			let username = user
 				.profile_scope
@@ -52,7 +52,7 @@ pub async fn signup(
 				code,
 			};
 
-			let html_mail = HANDLEBARS.render("signup", &signup_data)?;
+			let html_mail = HANDLEBARS.render(SIGNUP_TEMPLATE_NAME, &signup_data)?;
 			let email_title = "You signed up in Odysseus successfully!";
 
 			send_email_to_user(&user.email_scope.email, &username, email_title, &html_mail)?;
@@ -70,11 +70,11 @@ pub async fn signup(
 #[post("/login")]
 pub async fn local_login(
 	db: Data<MongoDatabase>,
-	login_input: Json<LoginInput>,
+	Json(login_input): Json<LoginInput>,
 	session: Session,
 ) -> Result<Json<UserInfo>, AuthErrors> {
 	// Destructure login
-	let LoginInput { email, password } = &login_input.into_inner();
+	let LoginInput { email, password } = &login_input;
 
 	// Login the user, will also persist the session
 	let user = User::login_with_session(&db, &session, email, password).await?;
@@ -114,7 +114,7 @@ pub async fn validate_email(
 				username: username.clone(),
 			};
 			// Send email
-			let html_mail = HANDLEBARS.render("email-verified", &validated_email_data)?;
+			let html_mail = HANDLEBARS.render(EMAIL_VERIFIED_TEMPLATE_NAME, &validated_email_data)?;
 			let email_title = "You just verified your email successfully!";
 
 			send_email_to_user(&user.email_scope.email, &username, email_title, &html_mail)?;
