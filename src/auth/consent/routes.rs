@@ -114,9 +114,9 @@ pub async fn post_consent(
 ) -> Result<Json<AcceptedRequest>, ConsentErrors> {
 	info!("Handling post consent request");
 
-	let consent_challenge = oauth_request.into_inner().consent_challenge;
+	let consent_challenge = &oauth_request.consent_challenge;
 
-	let ask_consent_request = admin_api::get_consent_request(&ORY_HYDRA_CONFIGURATION, &consent_challenge)
+	let ask_consent_request = admin_api::get_consent_request(&ORY_HYDRA_CONFIGURATION, consent_challenge)
 		.await
 		.map_err(|e| {
 			error!("{:?}", e);
@@ -129,7 +129,7 @@ pub async fn post_consent(
 		.ok_or(ConsentErrors::UserNotFound)?;
 
 	let accept_consent_request =
-		handle_accept_consent_request(subject, &db, &ask_consent_request, &data.scopes, &consent_challenge).await?;
+		handle_accept_consent_request(subject, &db, &ask_consent_request, &data.scopes, consent_challenge).await?;
 
 	info!("{:?}", &accept_consent_request);
 
