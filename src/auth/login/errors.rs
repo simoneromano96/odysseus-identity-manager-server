@@ -1,4 +1,5 @@
 use actix_web::{http::StatusCode, Error as ActixError, HttpResponse, ResponseError};
+use paperclip::actix::api_v2_errors;
 use serde::{Deserialize, Serialize};
 use serde_json::Error as JSONError;
 use thiserror::Error;
@@ -13,6 +14,10 @@ struct ErrorResponse {
 }
 
 #[derive(Error, Debug)]
+#[api_v2_errors(
+	code=400, description="Wrong credentials",
+	code=500,
+)]
 pub enum LoginErrors {
 	#[error("Internal server error")]
 	ActixError(#[from] ActixError),

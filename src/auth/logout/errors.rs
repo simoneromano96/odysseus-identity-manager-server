@@ -1,4 +1,5 @@
 use actix_web::{http::StatusCode, Error as ActixError, HttpResponse, ResponseError};
+use paperclip::actix::api_v2_errors;
 use serde::{Deserialize, Serialize};
 use serde_json::Error as JSONError;
 use thiserror::Error;
@@ -13,21 +14,16 @@ struct ErrorResponse {
 }
 
 #[derive(Error, Debug)]
+#[api_v2_errors(
+	code=500,
+)]
 pub enum LogoutErrors {
 	#[error("Internal server error")]
 	ActixError(#[from] ActixError),
-	#[error("Internal server error")]
-	DatabaseError(#[from] WitherError),
-	#[error("Could not create user")]
-	UserCreationError(#[from] UserErrors),
-	#[error("Password Error: {0}")]
-	PasswordError(#[from] PasswordErrors),
 	#[error("Ory hydra error")]
 	HydraError,
 	#[error("Invalid URL: {0}")]
 	InvalidUrl(#[from] ParseError),
-	#[error("Internal server error: {0}")]
-	JSONParseError(#[from] JSONError),
 }
 
 impl ResponseError for LogoutErrors {
@@ -40,8 +36,6 @@ impl ResponseError for LogoutErrors {
 
 	fn status_code(&self) -> StatusCode {
 		match self {
-			Self::UserCreationError(UserErrors::DatabaseError(_)) => StatusCode::BAD_REQUEST,
-			Self::PasswordError(_) => StatusCode::BAD_REQUEST,
 			_ => StatusCode::INTERNAL_SERVER_ERROR,
 		}
 	}

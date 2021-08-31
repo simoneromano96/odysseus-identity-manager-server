@@ -1,10 +1,11 @@
 use crate::{auth::AcceptedRequest, settings::APP_SETTINGS, settings::ORY_HYDRA_CONFIGURATION};
 
+use actix_web::{HttpResponse, http::header};
 use log::{error, info};
 use ory_hydra_client::apis::admin_api;
 use paperclip::actix::{
 	api_v2_operation, get, post,
-	web::{HttpResponse, Json, Query},
+	web::{Json, Query},
 };
 use url::Url;
 
@@ -34,7 +35,7 @@ pub async fn get_logout(oauth_request: Query<OauthLogoutRequest>) -> Result<Http
 
 	Ok(
 		HttpResponse::PermanentRedirect()
-			.header("Location", redirect_to.as_str())
+			.append_header((header::LOCATION, redirect_to.as_str()))
 			.finish(),
 	)
 }

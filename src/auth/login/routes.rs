@@ -6,11 +6,12 @@ use crate::{
 };
 
 use actix_session::Session;
+use actix_web::{HttpResponse, http::header};
 use log::error;
 use ory_hydra_client::apis::admin_api;
 use paperclip::actix::{
 	api_v2_operation, get, post,
-	web::{Data, HttpResponse, Json, Query},
+	web::{Data, Json, Query},
 };
 use url::Url;
 use wither::mongodb::Database as MongoDatabase;
@@ -54,7 +55,7 @@ pub async fn get_login(oauth_request: Query<OAuthLoginRequest>) -> Result<HttpRe
 
 	Ok(
 		HttpResponse::PermanentRedirect()
-			.header("Location", redirect_to.as_str())
+			.append_header((header::LOCATION, redirect_to.as_str()))
 			.finish(),
 	)
 }

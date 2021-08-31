@@ -3,11 +3,12 @@ use crate::{
 	settings::{APP_SETTINGS, ORY_HYDRA_CONFIGURATION},
 };
 
+use actix_web::{HttpResponse, http::header};
 use log::{error, info};
 use ory_hydra_client::{apis::admin_api, models::ConsentRequest};
 use paperclip::actix::{
 	api_v2_operation, get, post,
-	web::{Data, HttpResponse, Json, Query},
+	web::{Data, Json, Query},
 };
 use serde_qs;
 use url::Url;
@@ -96,7 +97,7 @@ pub async fn get_consent(
 
 	Ok(
 		HttpResponse::PermanentRedirect()
-			.header("Location", redirect_to.as_str())
+			.append_header((header::LOCATION, redirect_to.as_str()))
 			.finish(),
 	)
 }

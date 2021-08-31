@@ -19,7 +19,7 @@ pub fn hash_password(password: &str) -> Result<String, PasswordErrors> {
 
 	// Hash password to PHC string ($argon2id$v=19$...)
 	let password_hash = ARGON_2
-		.hash_password_simple(password.as_bytes(), &salt)
+		.hash_password(password.as_bytes(), &salt)
 		.map_err(|_| PasswordErrors::HashError)?
 		.to_string();
 

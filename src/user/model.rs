@@ -96,7 +96,7 @@ impl User {
 		// Verify the password
 		verify_password(&user.password, password)?;
 
-		session.set("user_id", user.id.clone().unwrap().to_hex())?;
+		session.insert("user_id", user.id.clone().unwrap().to_hex())?;
 
 		Ok(user)
 	}

@@ -8,7 +8,7 @@ use wither::bson::oid::ObjectId;
 use super::User;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Apiv2Schema)]
-	/// End-User's preferred postal address. The value of the address member is a JSON [RFC4627] structure containing some or all of the members defined in Section 5.1.1.
+/// End-User's preferred postal address. The value of the address member is a JSON [RFC4627] structure containing some or all of the members defined in Section 5.1.1.
 pub struct AddressScope {
 	/// The user's country
 	country: String,
@@ -113,9 +113,9 @@ pub struct UserInfo {
 	#[serde(
 		rename = "_id",
 		skip_serializing_if = "Option::is_none",
-		serialize_with = "serialize_object_id"
+		// serialize_with = "serialize_object_id"
 	)]
-	pub id: Option<ObjectId>,
+	pub id: Option<String>,
 	/// OpenID Connect Email scope
 	#[serde(flatten, skip_serializing_if = "Option::is_none")]
 	pub email_scope: Option<EmailScope>,
@@ -133,13 +133,18 @@ pub struct UserInfo {
 impl From<User> for UserInfo {
 	fn from(user: User) -> Self {
 		let User {
-			id,
+			// id,
 			email_scope,
 			phone_scope,
 			address,
 			profile_scope,
 			..
 		} = user;
+
+		let id = match user.id {
+			Some(id) => Some(id.to_hex()),
+			None => None,
+		};
 
 		UserInfo {
 			id,

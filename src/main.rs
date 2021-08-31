@@ -1,6 +1,8 @@
+#![feature(macro_attributes_in_derive_output)]
+
 use actix_cors::Cors;
 use actix_redis::RedisSession;
-use actix_web::{self, cookie, middleware, App, HttpServer};
+use actix_web::{self, App, HttpServer, cookie, middleware, web::Data};
 use paperclip::{
 	actix::{web::{scope}, OpenApiExt},
 	v2::models::{Contact, DefaultApiRaw, Info, License},
@@ -30,7 +32,7 @@ async fn main() -> std::io::Result<()> {
 	init_logger();
 
 	// Connect & sync indexes.
-	let identity_database = init_database().await;
+	let identity_database = Data::new(init_database().await);
 
 	HttpServer::new(move || {
 		let cors = Cors::default()
@@ -44,8 +46,6 @@ async fn main() -> std::io::Result<()> {
 		let spec = create_base_spec();
 
 		App::new()
-			// enable logger
-			.wrap(middleware::Logger::default())
 			// cookie session middleware
 			.wrap(
 				RedisSession::new(&APP_SETTINGS.redis.uri, APP_SETTINGS.session.secret.as_bytes())
@@ -55,7 +55,10 @@ async fn main() -> std::io::Result<()> {
 					.cookie_same_site(cookie::SameSite::Lax),
 			)
 			.wrap(cors)
-			.data(identity_database.clone())
+			// enable logger
+			.wrap(middleware::Logger::default())
+			// Database
+			.app_data(identity_database.clone())
 			// Record services and routes from this line.
 			.wrap_api_with_spec(spec)
 			.service(
