@@ -64,10 +64,10 @@ validator = { version = "0.14.0", features = ["derive"] }
 # MongoDB ODM
 wither = "0.9.0"
 
-[profile.release]
-# Link-time Optimization
-lto = true
-# Codegen Optimization
-codegen-units = 1
-# Abort on panic
-panic = "abort"
+# [profile.release]
+# # Link-time Optimization
+# lto = true
+# # Codegen Optimization
+# codegen-units = 1
+# # Abort on panic
+# panic = "abort"

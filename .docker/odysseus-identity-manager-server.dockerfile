@@ -1,4 +1,4 @@
-FROM rustlang/rust@sha256:51a79952f457741d24adb6b3918349f7b5723930e16358635a5a185a628991cb as builder
+FROM rustlang/rust@sha256:ac9481b8dbb515bc957602843a1f9e8aa82fc90aef65c61b6448065575721254 as builder
 
 # Enable cpu native optimizations
 ENV RUSTFLAGS="-C target-cpu=native"
