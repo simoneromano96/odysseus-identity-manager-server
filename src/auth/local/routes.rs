@@ -4,7 +4,7 @@ use crate::{
 	user::{User, UserErrors, UserInfo},
 };
 
-use actix_session::Session;
+// use actix_session::Session;
 
 use paperclip::actix::{
 	api_v2_operation, get, post,

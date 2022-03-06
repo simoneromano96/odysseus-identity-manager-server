@@ -5,7 +5,7 @@ use serde_json::Error as JsonError;
 use serde_qs::Error as QSError;
 use thiserror::Error;
 use url::ParseError;
-use wither::WitherError;
+use wither::{bson::oid::Error as ObjectIdError, WitherError};
 
 #[derive(Debug, Deserialize, Serialize)]
 struct ErrorResponse {
@@ -34,6 +34,8 @@ pub enum ConsentErrors {
 	InvalidUrl(#[from] ParseError),
 	#[error("Invalid Query Parameters: {0}")]
 	InvalidQueryParams(#[from] QSError),
+	#[error("Invalid OID: {0}")]
+	ObjectIdError(#[from] ObjectIdError),
 }
 
 impl ResponseError for ConsentErrors {

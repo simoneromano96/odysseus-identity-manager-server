@@ -1,6 +1,6 @@
 use std::{env, path::PathBuf};
 
-use config::{Config, Environment, File};
+use config::{Config, ConfigBuilder, Environment, File};
 use handlebars::Handlebars;
 use lettre::{transport::smtp::authentication::Credentials, SmtpTransport};
 use libreauth::{
@@ -76,9 +76,6 @@ pub struct Settings {
 
 impl Settings {
 	fn init_config() -> Self {
-		// Start config
-		let mut s = Config::default();
-
 		// Create a path
 		let mut config_file_path = env::current_dir().expect("Cannot get current path");
 
@@ -103,22 +100,28 @@ impl Settings {
 		// Add RUN_MODE{.local}.yaml
 		config_file_path.push(filename);
 
-		// Add in the current environment file
-		// Default to 'development' env
-		s.merge(File::from(config_file_path).required(false))
-			.expect("Could not read file");
+		let config = Config::builder()
+			// Add in the current environment file
+			// Default to 'development' env
+			.add_source(File::from(config_file_path).required(false))
+			// Add in settings from the environment
+			// ex. APP_DEBUG=1 sets debug key, APP_DATABASE_URL sets database.url key
+			.add_source(Environment::default().prefix("APP").separator("_"))
+			.build()
+			.expect("Could not build environment");
 
-		// Add in settings from the environment
-		// ex. APP_DEBUG=1 sets debug key, APP_DATABASE_URL sets database.url key
-		s.merge(Environment::new().prefix("APP").separator("_"))
-			.expect("Cannot get env");
+		// s.merge(File::from(config_file_path).required(false))
+		// 	.expect("Could not read file");
+
+		// s.merge(Environment::new().prefix("APP").separator("_"))
+		// 	.expect("Cannot get env");
 
 		// Deserialize configuration
-		let r: Settings = s.try_into().expect("Configuration error");
+		let settings: Settings = config.try_deserialize().expect("Configuration error");
 
-		info!("APP CONFIGURATION: {:?}", r);
+		info!("APP CONFIGURATION: {:?}", settings);
 
-		r
+		settings
 	}
 }
 

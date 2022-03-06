@@ -96,14 +96,15 @@ impl User {
 		// Verify the password
 		verify_password(&user.password, password)?;
 
-		session.set("user_id", user.id.clone().unwrap().to_hex())?;
+		session.insert("user_id", user.id.clone().unwrap().to_hex())?;
 
 		Ok(user)
 	}
 
 	pub async fn user_from_session(db: &Database, session: &Session) -> Result<Self, UserErrors> {
 		let user_id: String = session.get("user_id")?.ok_or(UserErrors::UserNotFound)?;
-		let id = ObjectId::with_string(&user_id)?;
+		// let id = ObjectId::with_string(&user_id)?;
+		let id = ObjectId::parse_str(&user_id)?;
 		Ok(Self::find_by_id(db, &id).await?.ok_or(UserErrors::UserNotFound)?)
 	}
 

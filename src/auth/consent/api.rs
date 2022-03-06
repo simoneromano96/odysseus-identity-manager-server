@@ -12,9 +12,14 @@ use crate::{
 
 use super::ConsentErrors;
 
-pub async fn create_user_session(subject: &str, db: &MongoDatabase, scopes: &[String]) -> Result<ConsentRequestSession, ConsentErrors> {
+pub async fn create_user_session(
+	subject: &str,
+	db: &MongoDatabase,
+	scopes: &[String],
+) -> Result<ConsentRequestSession, ConsentErrors> {
 	info!("Creating user session");
-	let id = ObjectId::with_string(subject).unwrap();
+	// let id = ObjectId::with_string(subject).unwrap();
+	let id = ObjectId::parse_str(subject)?;
 	let user = User::find_by_id(db, &id).await?.ok_or(ConsentErrors::UserNotFound)?;
 	let mut user_info = UserInfo::default();
 	info!("{:?}", &scopes);
@@ -31,10 +36,11 @@ pub async fn create_user_session(subject: &str, db: &MongoDatabase, scopes: &[St
 		}
 	});
 	info!("{:?}", &user_info);
-	let session = ConsentRequestSession {
-		id_token: Some(serde_json::to_value(&user_info)?),
-		access_token: Some(serde_json::to_value(&user_info)?),
-	};
+	// let session = ConsentRequestSession {
+	// 	id_token: Some(serde_json::to_value(&user_info)?),
+	// 	access_token: Some(serde_json::to_value(&user_info)?),
+	// };
+	let session = ConsentRequestSession::new();
 	info!("{:?}", &session);
 	Ok(session)
 }

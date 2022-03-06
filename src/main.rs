@@ -1,15 +1,15 @@
 use actix_cors::Cors;
 use actix_redis::RedisSession;
-use actix_web::{self, cookie, middleware, App, HttpServer};
+use actix_web::{self, cookie, middleware, web::Data, App, HttpServer};
 use paperclip::{
-	actix::{web::{scope}, OpenApiExt},
+	actix::{web::scope, OpenApiExt},
 	v2::models::{Contact, DefaultApiRaw, Info, License},
 };
 
 use crate::{
 	auth::{
-		get_consent, get_login, get_logout, local_login, post_consent, post_login, post_logout, signup,
-		user_info, validate_email,
+		get_consent, get_login, get_logout, local_login, post_consent, post_login, post_logout, signup, user_info,
+		validate_email,
 	},
 	settings::APP_SETTINGS,
 	utils::{init_database, init_logger},
@@ -55,7 +55,8 @@ async fn main() -> std::io::Result<()> {
 					.cookie_same_site(cookie::SameSite::Lax),
 			)
 			.wrap(cors)
-			.data(identity_database.clone())
+			.app_data(Data::new(identity_database))
+			// .data(identity_database.clone())
 			// Record services and routes from this line.
 			.wrap_api_with_spec(spec)
 			.service(
@@ -112,6 +113,7 @@ fn create_base_spec() -> DefaultApiRaw {
 		description: Some(DESCRIPTION.into()),
 		contact: Some(contact),
 		license: Some(license),
+		..Default::default()
 	};
 
 	spec
